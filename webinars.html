@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Webinars · Rentvine sales hub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="webinars">
+
+<section class="hero hero-sub">
+  <div class="hero-inner">
+    <span class="eyebrow">recordings · partner sessions · insights</span>
+    <h1>Webinars.</h1>
+    <p class="lead">Recordings and recaps from Rentvine and our partners. Share with prospects who want to learn before they switch.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="results-meta">
+    <span><b id="webinarCount">0</b> webinars</span>
+    <span style="font-size:12px; color: var(--text-tertiary);">sorted newest first · pulled from rentvine.com</span>
+  </div>
+
+  <div class="cards" id="webinarGrid"></div>
+</section>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="share.js"></script>
+<script src="search.js"></script>
+<script>
+  function renderWebinars() {
+    const sorted = [...webinars].sort((a, b) => new Date(b.date) - new Date(a.date));
+    setShareItems('webinar', sorted);
+    document.getElementById("webinarCount").textContent = sorted.length;
+    document.getElementById("webinarGrid").innerHTML = sorted.map((w, i) => `
+      <div class="case-card webinar-card">
+        <span class="switched-badge propertyware">${w.partner}</span>
+        <h3>${w.title}</h3>
+        <div class="quote">${w.desc}</div>
+        <div class="meta">
+          <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${fmtDate(w.date)}</span>
+        </div>
+        <div class="tags">
+          ${w.tags.map(t => `<span class="tag">${t.replace(/-/g,' ')}</span>`).join("")}
+        </div>
+        <div class="card-footer-row">
+          <a class="read-link" href="${w.url}" target="_blank" rel="noopener">watch recap</a>
+          ${shareBtnHtml('webinar', i)}
+        </div>
+      </div>
+    `).join("");
+  }
+  renderWebinars();
+</script>
+</body>
+</html>

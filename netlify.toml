@@ -1,0 +1,37 @@
+# Netlify config for the Rentvine sales hub
+# Static site, no build step needed.
+
+[build]
+  publish = "."
+
+[[headers]]
+  # Cache assets aggressively but keep HTML fresh
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# Redirect the legacy filename to home
+[[redirects]]
+  from = "/rentvine-sales-hub"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/rentvine-sales-hub.html"
+  to = "/"
+  status = 301

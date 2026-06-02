@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Features · Rentvine sales hub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="features">
+
+<section class="hero hero-sub">
+  <div class="hero-inner">
+    <span class="eyebrow">product library</span>
+    <h1>Every Rentvine feature.</h1>
+    <p class="lead">Search the library, filter by category, and grab the collateral (videos, screenshots, one-pagers) for every feature.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="toolbar">
+    <div class="search-row">
+      <div class="search-input">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="featSearch" placeholder="Search features..." />
+      </div>
+      <button class="clear-btn" id="featClear">clear all</button>
+    </div>
+    <div class="filter-groups">
+      <div class="filter-group">
+        <span class="label">Category</span>
+        <div class="chip-row" id="featCats">
+          <span class="chip" data-value="accounting">accounting</span>
+          <span class="chip" data-value="operations">operations</span>
+          <span class="chip" data-value="marketing">marketing & leasing</span>
+          <span class="chip" data-value="platform">platform</span>
+          <span class="chip" data-value="ai">AI</span>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="label">Sort by</span>
+        <div class="chip-row" id="featSort">
+          <span class="chip active vine" data-value="newest">newest first</span>
+          <span class="chip" data-value="alpha">by name</span>
+          <span class="chip" data-value="category">category</span>
+        </div>
+      </div>
+      <div class="filter-group">
+        <span class="label">Show only</span>
+        <div class="chip-row" id="featNewToggle">
+          <span class="chip" data-value="new">released in last 6 months</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-meta">
+    <span><b id="featCount">0</b> features <span style="color:var(--text-tertiary);" id="featSortLabel">· newest first</span></span>
+    <span style="font-size:12px;">tip: edit <code>data.js</code> to add videos, images, or one-pagers</span>
+  </div>
+  <div class="features-grid" id="featGrid"></div>
+</section>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="share.js"></script>
+<script src="search.js"></script>
+<script>
+  const fState = { search: "", cats: new Set(), sort: "newest", newOnly: false };
+
+  const SIX_MONTHS_MS = 1000 * 60 * 60 * 24 * 30 * 6;
+  function isNew(f) {
+    if (!f.released) return false;
+    return Date.now() - new Date(f.released).getTime() < SIX_MONTHS_MS;
+  }
+
+  function collateralSlot(type, asset) {
+    const ico = type === "video" ? ICONS.video : type === "image" ? ICONS.image : ICONS.doc;
+    const isEmpty = !asset || !asset.url;
+    const tag = isEmpty ? "div" : "a";
+    const href = isEmpty ? "" : `href="${asset.url}" target="_blank" rel="noopener"`;
+    return `<${tag} class="collateral-slot ${isEmpty ? 'empty' : ''}" ${href}>
+      <span class="ico">${ico}</span>
+      <span class="label-stack">
+        <span class="type">${type}</span>
+        <span>${isEmpty ? 'add link' : (asset.label || 'open')}</span>
+      </span>
+    </${tag}>`;
+  }
+
+  function renderFeatures() {
+    const q = fState.search.trim().toLowerCase();
+    let filtered = features.filter(f => {
+      if (q && !(f.name + " " + f.desc).toLowerCase().includes(q)) return false;
+      if (fState.cats.size && !fState.cats.has(f.category)) return false;
+      if (fState.newOnly && !isNew(f)) return false;
+      return true;
+    });
+
+    // Sort
+    if (fState.sort === "newest") {
+      filtered.sort((a, b) => new Date(b.released || 0) - new Date(a.released || 0));
+    } else if (fState.sort === "alpha") {
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (fState.sort === "category") {
+      const order = ['ai','accounting','operations','marketing','platform'];
+      filtered.sort((a, b) => {
+        const ca = order.indexOf(a.category);
+        const cb = order.indexOf(b.category);
+        if (ca !== cb) return ca - cb;
+        return new Date(b.released || 0) - new Date(a.released || 0);
+      });
+    }
+
+    setShareItems('feature', filtered);
+    document.getElementById("featCount").textContent = filtered.length;
+    const sortLabel = { newest: "newest first", alpha: "by name", category: "by category" }[fState.sort];
+    document.getElementById("featSortLabel").textContent = "· " + sortLabel;
+
+    const grid = document.getElementById("featGrid");
+    grid.innerHTML = filtered.map((f, idx) => {
+      const releaseDate = f.released ? fmtDate(f.released) : "";
+      const newBadge = isNew(f) ? '<span class="new-badge">NEW</span>' : '';
+      return `
+      <div class="feature-card">
+        <div class="feature-head">
+          <span class="category-badge ${f.category}">${f.category}</span>
+          ${newBadge}
+          ${shareBtnHtml('feature', idx)}
+        </div>
+        <h3>${f.name}</h3>
+        ${releaseDate ? `<div class="release-date">released ${releaseDate}</div>` : ''}
+        <div class="feature-desc">${f.desc}</div>
+        <a class="feature-link" href="${f.url}" target="_blank" rel="noopener">view page </a>
+        <div class="collateral-row">
+          ${collateralSlot("video", f.video)}
+          ${collateralSlot("image", f.image)}
+          ${collateralSlot("one-pager", f.onePager)}
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  document.getElementById("featSearch").addEventListener("input", e => { fState.search = e.target.value; renderFeatures(); });
+
+  document.getElementById("featCats").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    const v = chip.getAttribute("data-value");
+    if (fState.cats.has(v)) { fState.cats.delete(v); chip.classList.remove("active","vine"); }
+    else { fState.cats.add(v); chip.classList.add("active","vine"); }
+    renderFeatures();
+  });
+
+  document.getElementById("featSort").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    document.querySelectorAll("#featSort .chip").forEach(c => c.classList.remove("active","vine"));
+    chip.classList.add("active","vine");
+    fState.sort = chip.getAttribute("data-value");
+    renderFeatures();
+  });
+
+  document.getElementById("featNewToggle").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    fState.newOnly = !fState.newOnly;
+    chip.classList.toggle("active");
+    chip.classList.toggle("vine");
+    renderFeatures();
+  });
+
+  document.getElementById("featClear").addEventListener("click", () => {
+    fState.search = "";
+    fState.cats.clear();
+    fState.newOnly = false;
+    fState.sort = "newest";
+    document.getElementById("featSearch").value = "";
+    document.querySelectorAll("#featCats .chip.active, #featNewToggle .chip.active").forEach(c => c.classList.remove("active","vine"));
+    document.querySelectorAll("#featSort .chip").forEach(c => c.classList.remove("active","vine"));
+    document.querySelector('#featSort .chip[data-value="newest"]').classList.add("active","vine");
+    renderFeatures();
+  });
+
+  renderFeatures();
+</script>
+</body>
+</html>

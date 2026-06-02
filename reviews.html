@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reviews · Rentvine sales hub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="reviews">
+
+<section class="hero hero-sub">
+  <div class="hero-inner">
+    <span class="eyebrow">real customers · real results</span>
+    <h1>Customer reviews.</h1>
+    <p class="lead">Every review from G2, Google, and Capterra, pulled live from the Monday board. Filter by theme, source, or star rating.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="section-head">
+    <div>
+      <span class="section-eyebrow">filter by source</span>
+      <h2 style="font-size:24px;">G2 or Google?</h2>
+    </div>
+    <div class="source-toggle" id="sourceToggle">
+      <button data-source="all" class="active"><span class="dot"></span>All</button>
+      <button data-source="g2"><span class="dot"></span>G2</button>
+      <button data-source="google"><span class="dot"></span>Google</button>
+      <button data-source="capterra"><span class="dot"></span>Capterra</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="filter-groups">
+      <div class="filter-group">
+        <span class="label">Star rating</span>
+        <div class="chip-row" id="starFilter">
+          <span class="chip star-chip" data-value="5"><span class="star-icon">★</span>5</span>
+          <span class="chip star-chip" data-value="4"><span class="star-icon">★</span>4</span>
+          <span class="chip star-chip" data-value="3"><span class="star-icon">★</span>3</span>
+          <span class="chip star-chip" data-value="2"><span class="star-icon">★</span>2</span>
+          <span class="chip star-chip" data-value="1"><span class="star-icon">★</span>1</span>
+        </div>
+      </div>
+      <div class="filter-group" style="grid-column: span 2;">
+        <span class="label">Theme</span>
+        <div class="chip-row" id="reviewTags">
+          <span class="chip" data-value="support">support</span>
+          <span class="chip" data-value="easy-to-use">easy to use</span>
+          <span class="chip" data-value="onboarding">onboarding</span>
+          <span class="chip" data-value="switching">switching</span>
+          <span class="chip" data-value="accounting">accounting</span>
+          <span class="chip" data-value="maintenance">maintenance</span>
+          <span class="chip" data-value="integrations">integrations</span>
+          <span class="chip" data-value="innovation">innovation</span>
+          <span class="chip" data-value="ai">AI</span>
+          <span class="chip" data-value="growth">growth</span>
+          <span class="chip" data-value="websites">websites</span>
+          <span class="chip" data-value="pmw">pmw</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results-meta">
+    <span><b id="reviewCount">0</b> reviews</span>
+    <button class="clear-btn" id="reviewClear">clear filters</button>
+  </div>
+
+  <div class="review-grid" id="reviewGrid"></div>
+  <div class="load-sentinel" id="reviewSentinel">
+    <span><span class="spinner"></span>scroll to load more</span>
+  </div>
+</section>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="share.js"></script>
+<script src="search.js"></script>
+<script>
+  const rState = { source: "all", tags: new Set(), stars: new Set(), shown: 6, batch: 6 };
+
+  function getFiltered() {
+    return reviews.filter(r => {
+      if (rState.source !== "all" && r.source !== rState.source) return false;
+      if (rState.stars.size && !rState.stars.has(String(r.stars))) return false;
+      if (rState.tags.size && ![...rState.tags].some(t => r.tags.includes(t))) return false;
+      return true;
+    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  function cleanLoc(t) {
+    if (!t) return null;
+    const s = String(t).trim();
+    if (!s || /^(unknown|n\/?a)$/i.test(s)) return null;
+    return s;
+  }
+  function reviewerSub(r) {
+    const co = r.company && !/^(unknown|n\/?a)$/i.test(r.company) ? r.company : null;
+    const ter = cleanLoc(r.territory);
+    const parts = [];
+    if (co) parts.push(co);
+    if (ter) parts.push(ter);
+    return parts.length ? parts.join(' · ') : 'Property Manager';
+  }
+
+  function renderReviews(reset = false) {
+    if (reset) rState.shown = rState.batch;
+    const list = getFiltered();
+    const slice = list.slice(0, rState.shown);
+    setShareItems('review', slice);
+    document.getElementById("reviewCount").textContent = list.length;
+    const grid = document.getElementById("reviewGrid");
+    grid.innerHTML = slice.map((r, idx) => {
+      const linkable = !!r.hsId;
+      const hrefAttr = linkable ? `href="${hsUrl(r.hsId)}" target="_blank" rel="noopener"` : "";
+      const tag = linkable ? "a" : "div";
+      const text = r.text ? `"${r.text}"` : '<span style="opacity:0.5;">(star rating only, no review text)</span>';
+      return `
+      <${tag} class="review-card ${linkable ? '' : 'no-link'}" ${hrefAttr}>
+        <div class="review-head">
+          <div class="review-head-left">
+            <span class="stars">${renderStars(r.stars)}</span>
+            <span class="review-date">${fmtDate(r.date)}</span>
+          </div>
+          <span class="source-badge ${r.source}">${r.source === 'g2' ? 'G2' : r.source === 'capterra' ? 'Capterra' : 'Google'}</span>
+        </div>
+        <div class="review-text">${text}</div>
+        <div class="review-tags">${r.tags.map(t => `<span class="review-tag">${t.replace(/-/g,' ')}</span>`).join("")}</div>
+        <div class="reviewer">
+          <div class="avatar">${initials(r.name)}</div>
+          <div class="reviewer-info">
+            <div class="reviewer-name">${r.name}</div>
+            <div class="reviewer-company">${reviewerSub(r)}</div>
+          </div>
+          <span class="hs-pill ${linkable ? '' : 'empty'}">${linkable ? 'open in hubspot ↗' : 'no hs match'}</span>
+        </div>
+        <div class="card-footer-row" style="border-top:1px dashed var(--border); padding-top:12px;">
+          <span></span>
+          ${shareBtnHtml('review', idx)}
+        </div>
+      </${tag}>`;
+    }).join("");
+
+    const sentinel = document.getElementById("reviewSentinel");
+    if (rState.shown >= list.length) {
+      sentinel.classList.add("done");
+      sentinel.innerHTML = list.length ? "all caught up. that's every review." : "no reviews match these filters.";
+    } else {
+      sentinel.classList.remove("done");
+      sentinel.innerHTML = '<span><span class="spinner"></span>scroll to load more</span>';
+    }
+  }
+
+  // Source toggle
+  document.getElementById("sourceToggle").addEventListener("click", e => {
+    const btn = e.target.closest("button"); if (!btn) return;
+    document.querySelectorAll("#sourceToggle button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    rState.source = btn.getAttribute("data-source");
+    renderReviews(true);
+  });
+
+  // Theme chips
+  document.getElementById("reviewTags").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    const v = chip.getAttribute("data-value");
+    if (rState.tags.has(v)) { rState.tags.delete(v); chip.classList.remove("active","honey"); }
+    else { rState.tags.add(v); chip.classList.add("active","honey"); }
+    renderReviews(true);
+  });
+
+  // Star chips
+  document.getElementById("starFilter").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    const v = chip.getAttribute("data-value");
+    if (rState.stars.has(v)) { rState.stars.delete(v); chip.classList.remove("active","vine"); }
+    else { rState.stars.add(v); chip.classList.add("active","vine"); }
+    renderReviews(true);
+  });
+
+  // Clear
+  document.getElementById("reviewClear").addEventListener("click", () => {
+    rState.tags.clear();
+    rState.stars.clear();
+    rState.source = "all";
+    document.querySelectorAll(".chip.active").forEach(c => c.classList.remove("active","honey","vine"));
+    document.querySelectorAll("#sourceToggle button").forEach(b => b.classList.toggle("active", b.dataset.source === "all"));
+    renderReviews(true);
+  });
+
+  // Lazy load
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        const list = getFiltered();
+        if (rState.shown < list.length) {
+          rState.shown += rState.batch;
+          renderReviews(false);
+        }
+      }
+    });
+  }, { rootMargin: "200px" });
+  obs.observe(document.getElementById("reviewSentinel"));
+
+  renderReviews(true);
+</script>
+</body>
+</html>

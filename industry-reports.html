@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Industry reports · Rentvine sales hub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="industry-reports">
+
+<section class="hero hero-sub">
+  <div class="hero-inner">
+    <span class="eyebrow">research · benchmarks · data</span>
+    <h1>Industry reports.</h1>
+    <p class="lead">Research and benchmark reports to share with prospects. Real data on what landlords expect and where the industry is heading.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="results-meta">
+    <span><b id="reportCount">0</b> reports</span>
+  </div>
+
+  <div class="report-grid" id="reportGrid"></div>
+</section>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="share.js"></script>
+<script src="search.js"></script>
+<script>
+  function renderReports() {
+    setShareItems('report', industryReports);
+    document.getElementById("reportCount").textContent = industryReports.length;
+    document.getElementById("reportGrid").innerHTML = industryReports.map((r, i) => `
+      <div class="report-card ${r.color || ''}">
+        <div class="report-meta-row">
+          <span class="publisher">${r.publisherShort || r.publisher}</span>
+          <span>· ${r.year}</span>
+          <span>· ${r.pages}</span>
+        </div>
+        <h3>${r.title}</h3>
+        <div class="report-desc">${r.desc}</div>
+        ${r.stats ? `<ul class="report-stats">${r.stats.map(s => `<li>${s}</li>`).join("")}</ul>` : ''}
+        <div class="report-audience"><b>Best for:</b> ${r.audience}</div>
+        ${r.note ? `<div class="report-note">${r.note}</div>` : ''}
+        <div class="report-tags">
+          ${r.tags.map(t => `<span class="tag">${t.replace(/-/g,' ')}</span>`).join("")}
+        </div>
+        <div class="report-actions">
+          <div class="report-actions-primary">
+            <a class="download-btn" href="${r.url}" target="_blank" rel="noopener">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              download pdf
+            </a>
+            ${r.landingUrl ? `<a class="learn-more-link" href="${r.landingUrl}" target="_blank" rel="noopener">read more →</a>` : ''}
+          </div>
+          ${shareBtnHtml('report', i)}
+        </div>
+      </div>
+    `).join("");
+  }
+  renderReports();
+</script>
+</body>
+</html>

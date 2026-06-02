@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Outreach generator · Rentvine sales hub</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="outreach">
+
+<section class="hero hero-sub">
+  <div class="hero-inner">
+    <span class="eyebrow">linkedin dms · cold email · follow-ups</span>
+    <h1>Outreach generator.</h1>
+    <p class="lead">Draft a LinkedIn message or email for a prospect. Fill in the details, pick a content angle, hit generate.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="outreach-grid">
+    <!-- LEFT: INPUTS -->
+    <div class="outreach-form toolbar">
+
+      <div class="filter-group">
+        <span class="label">Who are you reaching out to?</span>
+        <div class="input-pair">
+          <input type="text" id="oFirstName" placeholder="First name" />
+          <input type="text" id="oCompany" placeholder="Company" />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="label">Channel</span>
+        <div class="chip-row" id="oChannel">
+          <span class="chip active vine" data-value="email">cold email</span>
+          <span class="chip" data-value="warm-email">warm email</span>
+          <span class="chip" data-value="linkedin">linkedin dm</span>
+          <span class="chip" data-value="followup">follow-up</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <span class="label">What's the angle?</span>
+        <div class="chip-row" id="oType">
+          <span class="chip active vine" data-value="cold-intro">cold intro</span>
+          <span class="chip" data-value="share-case">share a case study</span>
+          <span class="chip" data-value="share-review">share a review</span>
+          <span class="chip" data-value="share-feature">share a feature</span>
+          <span class="chip" data-value="share-report">share a report</span>
+          <span class="chip" data-value="share-webinar">share a webinar</span>
+        </div>
+      </div>
+
+      <div class="filter-group" id="oContentGroup" style="display:none;">
+        <span class="label">Choose specific content</span>
+        <select id="oContent" class="o-select"></select>
+      </div>
+
+      <div class="filter-group">
+        <span class="label">What do they care about? <span class="optional">(optional)</span></span>
+        <input type="text" id="oPain" class="o-input-full" placeholder="e.g. switching from AppFolio, scaling accounting, owner retention" />
+      </div>
+
+      <div class="filter-group">
+        <span class="label">Tone</span>
+        <div class="chip-row" id="oTone">
+          <span class="chip active vine" data-value="warm">warm</span>
+          <span class="chip" data-value="direct">direct</span>
+          <span class="chip" data-value="consultative">consultative</span>
+          <span class="chip" data-value="casual">casual</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <button class="btn btn-primary o-generate-btn" id="oGenerate" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l1.6 5.5 5.5 1.6-5.5 1.6L12 16.7l-1.6-5.5L4.9 9.6l5.5-1.6L12 2.5z"/><path d="M18.5 13.5l.85 2.4 2.4.85-2.4.85-.85 2.4-.85-2.4-2.4-.85 2.4-.85.85-2.4z"/></svg>
+          generate draft
+        </button>
+      </div>
+    </div>
+
+    <!-- RIGHT: OUTPUT -->
+    <div class="outreach-output">
+      <div class="o-output-header">
+        <div>
+          <span class="section-eyebrow">draft</span>
+          <h2 class="o-output-title" id="oOutputTitle">Your message will appear here.</h2>
+        </div>
+      </div>
+
+      <div class="o-output-block">
+        <div class="o-subject-row" id="oSubjectRow" style="display:none;">
+          <label>Subject</label>
+          <input type="text" id="oSubject" />
+        </div>
+        <textarea id="oBody" class="o-body" spellcheck="false" placeholder="Pick your inputs on the left and hit generate."></textarea>
+      </div>
+
+      <div class="o-actions">
+        <button class="btn btn-primary" id="oCopy" type="button" disabled>copy</button>
+        <button class="btn btn-secondary" id="oRegenerate" type="button" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          regenerate
+        </button>
+        <button class="btn btn-secondary" id="oOpenAction" type="button" disabled>open in mail</button>
+        <button class="btn btn-ghost o-ai-btn" id="oCopyAI" type="button" disabled>copy as AI prompt</button>
+        <span class="o-status" id="oStatus"></span>
+      </div>
+
+      <p class="o-tip">tip: "copy as AI prompt" gives you a context-rich prompt you can paste into Claude or ChatGPT for a more custom draft.</p>
+    </div>
+  </div>
+</section>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="share.js"></script>
+<script src="search.js"></script>
+<script>
+  const oState = {
+    firstName: "",
+    company: "",
+    channel: "email",
+    type: "cold-intro",
+    contentId: "",
+    pain: "",
+    tone: "warm",
+    nonce: 0
+  };
+
+  // ----- Helpers -----
+  const N = (v, fb) => (v && v.trim()) ? v.trim() : fb;
+  const pick = (arr, i) => arr[i % arr.length];
+
+  function setupChipGroup(id, key) {
+    document.getElementById(id).addEventListener("click", e => {
+      const chip = e.target.closest(".chip"); if (!chip) return;
+      document.querySelectorAll(`#${id} .chip`).forEach(c => c.classList.remove("active","vine"));
+      chip.classList.add("active","vine");
+      oState[key] = chip.dataset.value;
+      if (key === "type") syncContentDropdown();
+    });
+  }
+  setupChipGroup("oChannel", "channel");
+  setupChipGroup("oType", "type");
+  setupChipGroup("oTone", "tone");
+
+  document.getElementById("oFirstName").addEventListener("input", e => oState.firstName = e.target.value);
+  document.getElementById("oCompany").addEventListener("input", e => oState.company = e.target.value);
+  document.getElementById("oPain").addEventListener("input", e => oState.pain = e.target.value);
+  document.getElementById("oContent").addEventListener("change", e => oState.contentId = e.target.value);
+
+  function syncContentDropdown() {
+    const group = document.getElementById("oContentGroup");
+    const sel = document.getElementById("oContent");
+    const typeToData = {
+      "share-case": () => caseStudies.map(c => ({ id: c.url, label: c.customer })),
+      "share-review": () => reviews.filter(r => r.stars === 5).slice(0, 30).map((r, i) => ({ id: i, label: `${r.name}${r.company ? " · " + r.company : ""} (${r.stars}★)` })),
+      "share-feature": () => features.map(f => ({ id: f.url, label: f.name })),
+      "share-report": () => industryReports.map(r => ({ id: r.url, label: r.title })),
+      "share-webinar": () => webinars.map(w => ({ id: w.url, label: w.title }))
+    };
+    if (typeToData[oState.type]) {
+      group.style.display = "";
+      const opts = typeToData[oState.type]();
+      sel.innerHTML = opts.map(o => `<option value="${o.id}">${o.label}</option>`).join("");
+      oState.contentId = opts[0]?.id ?? "";
+    } else {
+      group.style.display = "none";
+      oState.contentId = "";
+    }
+  }
+  syncContentDropdown();
+
+  // ----- Content lookup -----
+  function getSelectedContent() {
+    const t = oState.type;
+    const id = oState.contentId;
+    if (t === "share-case")    return caseStudies.find(c => c.url === id);
+    if (t === "share-feature") return features.find(f => f.url === id);
+    if (t === "share-report")  return industryReports.find(r => r.url === id);
+    if (t === "share-webinar") return webinars.find(w => w.url === id);
+    if (t === "share-review")  return reviews.filter(r => r.stars === 5).slice(0, 30)[parseInt(id, 10)];
+    return null;
+  }
+
+  // ----- Templates -----
+  const TONE_GREETING = {
+    warm:         ["Hi", "Hey", "Hi there"],
+    direct:       ["Hi", "Hey"],
+    consultative: ["Hi", "Hello"],
+    casual:       ["Hey", "Hi"]
+  };
+
+  const PAIN_LINE = {
+    warm:         (p) => `Saw that ${p} is on your radar — wanted to share something useful.`,
+    direct:       (p) => `Noticed ${p} is a focus for you.`,
+    consultative: (p) => `Most PMs we talk to are wrestling with ${p}. Curious if that's true for you.`,
+    casual:       (p) => `Came up in convo — ${p}. Thought of you.`
+  };
+
+  const SIGN_OFF = {
+    warm:         ["Thanks,", "Best,", "Talk soon,"],
+    direct:       ["Thanks,", "—"],
+    consultative: ["Thanks,", "Best,"],
+    casual:       ["Cheers,", "Thanks,"]
+  };
+
+  function generate() {
+    const name = N(oState.firstName, "[first name]");
+    const co = N(oState.company, "[Company]");
+    const pain = N(oState.pain, "");
+    const tone = oState.tone;
+    const channel = oState.channel;
+    const type = oState.type;
+    const greet = pick(TONE_GREETING[tone], oState.nonce);
+    const sign = pick(SIGN_OFF[tone], oState.nonce);
+    const item = getSelectedContent();
+
+    let subject = "";
+    let body = "";
+
+    // ---- Cold intro ----
+    if (type === "cold-intro") {
+      const painLine = pain ? PAIN_LINE[tone](pain) : "";
+      if (channel === "linkedin") {
+        const variants = [
+          `${greet} ${name}, ${painLine ? painLine + " " : ""}Rentvine is the #1-ranked PM software (PropertyManagement.com VPI report — 188K+ doors verified). Worth a quick look?`,
+          `${greet} ${name}, ${pain ? "thinking about " + pain + "? " : ""}Wanted to put Rentvine on your radar. We just topped PropertyManagement.com's VPI ranking. Open to a 15-min compare?`,
+          `${greet} ${name}, real quick — ${co} sounds like the kind of operation Rentvine fits well. 35-min support response, +85.7 NPS, no feature paywalls. Worth comparing?`
+        ];
+        body = pick(variants, oState.nonce);
+      } else {
+        // email (cold or warm)
+        const sub = [
+          `Quick idea for ${co}`,
+          `Rentvine + ${co}?`,
+          `Worth a 15-min compare, ${name}?`
+        ];
+        subject = pick(sub, oState.nonce);
+        const variants = [
+`${greet} ${name},
+
+${painLine || "Wanted to put Rentvine on your radar."}
+
+We're the property management software that PropertyManagement.com just ranked #1 — verified by 143 operators and 656 of their clients across 188K+ doors. Strong on trust accounting, fast support (35-min average), and no feature paywalls.
+
+If you're benchmarking your stack, would love to compare notes. Open to a 15-min call this week?
+
+${sign}
+[your name]`,
+`${greet} ${name},
+
+${painLine || ""}Rentvine is the fastest-growing PM software in single-family rentals. A few things ${co} might care about:
+
+· True double-entry GAAP trust accounting
+· Open RESTful API (no paywall)
+· 30-60 days to go live, with 80% of the migration handled by our team
+
+Happy to walk through it. Best time this week?
+
+${sign}
+[your name]`
+        ];
+        body = pick(variants, oState.nonce);
+      }
+    }
+
+    // ---- Share a case study ----
+    else if (type === "share-case" && item) {
+      const switchedFrom = {
+        appfolio: "moved off AppFolio",
+        propertyware: "made the switch from Propertyware",
+        legacy: "swapped out their old software"
+      }[item.switched] || "switched to Rentvine";
+      if (channel === "linkedin") {
+        body = `${greet} ${name}, ${pain ? "thinking about " + pain + " — " : ""}this case study might land. ${item.customer} ${switchedFrom} and shared what changed. ${item.url}`;
+      } else {
+        subject = `Thought you'd want to see this — ${item.customer}`;
+        body =
+`${greet} ${name},
+
+This case study might be helpful as we continue our conversation. ${item.customer} ${switchedFrom} and shared what changed${pain ? ", especially around " + pain : ""}.
+
+${item.url}
+
+${sign}
+[your name]`;
+      }
+    }
+
+    // ---- Share a review ----
+    else if (type === "share-review" && item) {
+      const source = item.source === 'g2' ? 'G2' : item.source === 'capterra' ? 'Capterra' : 'Google';
+      const co2 = item.company && !/^(unknown|n\/?a)$/i.test(item.company) ? `, ${item.company}` : "";
+      if (channel === "linkedin") {
+        body = `${greet} ${name}, came across this ${source} review and thought it might be helpful for you and your team:\n\n"${item.text || ""}"\n${item.name}${co2}`;
+      } else {
+        subject = `A real review from a property manager`;
+        body =
+`${greet} ${name},
+
+Came across this ${source} review and thought it might be helpful for you and your team:
+
+"${item.text || ""}"
+${item.name}${co2}
+
+${sign}
+[your name]`;
+      }
+    }
+
+    // ---- Share a feature ----
+    else if (type === "share-feature" && item) {
+      if (channel === "linkedin") {
+        body = `${greet} ${name}, quick share — Rentvine's ${item.name}. ${item.desc.split(".")[0]}. ${item.url}`;
+      } else {
+        subject = `Quick share — Rentvine's ${item.name}`;
+        body =
+`${greet} ${name},
+
+Thought this might be helpful for you and your team — quick look at Rentvine's ${item.name}.
+
+${item.desc}
+
+${item.url}
+
+${sign}
+[your name]`;
+      }
+    }
+
+    // ---- Share a report ----
+    else if (type === "share-report" && item) {
+      const body2 = item.snippet || `Sharing ${item.title}.`;
+      if (channel === "linkedin") {
+        body = `${greet} ${name}, ${body2} ${item.url}`;
+      } else {
+        subject = item.title;
+        body =
+`${greet} ${name},
+
+${body2}
+
+${item.url}
+
+${sign}
+[your name]`;
+      }
+    }
+
+    // ---- Share a webinar ----
+    else if (type === "share-webinar" && item) {
+      const body2 = item.snippet || `Sharing a recent webinar with ${item.partner}: ${item.title}.`;
+      if (channel === "linkedin") {
+        body = `${greet} ${name}, ${body2} ${item.url}`;
+      } else {
+        subject = `Webinar: ${item.title}`;
+        body =
+`${greet} ${name},
+
+${body2}
+
+${item.url}
+
+${sign}
+[your name]`;
+      }
+    }
+
+    else {
+      body = "Pick an angle and (if relevant) a piece of content, then hit generate.";
+    }
+
+    return { subject, body };
+  }
+
+  function render(draft) {
+    const titleEl = document.getElementById("oOutputTitle");
+    const subjectRow = document.getElementById("oSubjectRow");
+    const subjectInput = document.getElementById("oSubject");
+    const bodyEl = document.getElementById("oBody");
+
+    if (draft.subject) {
+      subjectRow.style.display = "";
+      subjectInput.value = draft.subject;
+      titleEl.textContent = "Email draft";
+    } else {
+      subjectRow.style.display = "none";
+      titleEl.textContent = "LinkedIn DM draft";
+    }
+    bodyEl.value = draft.body;
+
+    const openBtn = document.getElementById("oOpenAction");
+    if (oState.channel === "linkedin") {
+      openBtn.textContent = "open linkedin";
+      openBtn.disabled = false;
+    } else {
+      openBtn.textContent = "open in mail";
+      openBtn.disabled = false;
+    }
+
+    document.getElementById("oCopy").disabled = false;
+    document.getElementById("oRegenerate").disabled = false;
+    document.getElementById("oCopyAI").disabled = false;
+  }
+
+  document.getElementById("oGenerate").addEventListener("click", () => {
+    oState.nonce = 0;
+    render(generate());
+  });
+
+  document.getElementById("oRegenerate").addEventListener("click", () => {
+    oState.nonce += 1;
+    render(generate());
+  });
+
+  // Copy text (full subject+body if email)
+  function getFullText() {
+    const subj = document.getElementById("oSubject").value;
+    const body = document.getElementById("oBody").value;
+    if (subj) return `Subject: ${subj}\n\n${body}`;
+    return body;
+  }
+
+  document.getElementById("oCopy").addEventListener("click", () => {
+    navigator.clipboard.writeText(getFullText()).then(() => flashStatus("✓ copied"));
+  });
+
+  // Open mail or LinkedIn
+  document.getElementById("oOpenAction").addEventListener("click", () => {
+    const body = document.getElementById("oBody").value;
+    if (oState.channel === "linkedin") {
+      // LinkedIn doesn't support pre-filled DMs. Copy to clipboard and open LinkedIn.
+      navigator.clipboard.writeText(body).then(() => {
+        flashStatus("✓ copied — paste into LinkedIn");
+        window.open("https://www.linkedin.com/messaging/", "_blank", "noopener");
+      });
+    } else {
+      const subj = document.getElementById("oSubject").value;
+      const url = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+      window.location.href = url;
+    }
+  });
+
+  // Build AI prompt with full context for Claude/ChatGPT
+  document.getElementById("oCopyAI").addEventListener("click", () => {
+    const item = getSelectedContent();
+    const itemContext = item ? `\n\nContext on the content I want to share:\n${JSON.stringify(item, null, 2)}` : "";
+
+    const channelLabel = { email: "cold email", "warm-email": "warm email", linkedin: "linkedin dm", followup: "follow-up message" }[oState.channel];
+    const typeLabel = {
+      "cold-intro": "cold introduction",
+      "share-case": "share a customer case study",
+      "share-review": "share a customer review",
+      "share-feature": "share a Rentvine feature",
+      "share-report": "share an industry report",
+      "share-webinar": "share a webinar recording"
+    }[oState.type];
+
+    const prompt =
+`You are writing for Rentvine, the #1-ranked property management software (PropertyManagement.com VPI report). Voice is personable, direct, no jargon, no em dashes, sentence case in titles.
+
+Write a ${channelLabel} for me. Goal: ${typeLabel}.
+
+Recipient:
+- First name: ${N(oState.firstName, "[unknown]")}
+- Company: ${N(oState.company, "[unknown]")}
+- What they care about: ${N(oState.pain, "[unspecified]")}
+
+Tone: ${oState.tone}
+${itemContext}
+
+Rules:
+- ${oState.channel === "linkedin" ? "Keep it under 3 sentences. No subject line." : "Include a subject line (under 8 words) and a 4-6 sentence body."}
+- No em dashes. Use periods or commas.
+- Sound human and quippy. Avoid corporate speak ("cutting-edge", "robust", "seamless").
+- End with a clear, low-friction CTA.
+
+Draft below:`;
+
+    navigator.clipboard.writeText(prompt).then(() => {
+      flashStatus("✓ AI prompt copied — paste into Claude or ChatGPT");
+    });
+  });
+
+  function flashStatus(text) {
+    const s = document.getElementById("oStatus");
+    s.textContent = text;
+    s.classList.add("ok");
+    setTimeout(() => { s.textContent = ""; s.classList.remove("ok"); }, 2200);
+  }
+</script>
+</body>
+</html>
