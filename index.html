@@ -16,6 +16,16 @@
   </div>
 </section>
 
+<section class="container section" id="recentSection">
+  <div class="section-head">
+    <div>
+      <span class="section-eyebrow">just added</span>
+      <h2>Recent updates.</h2>
+    </div>
+  </div>
+  <div class="recent-grid" id="recentGrid"></div>
+</section>
+
 <section class="container section">
   <div class="section-head">
     <div>
@@ -108,5 +118,60 @@
 <script src="nav.js"></script>
 <script src="share.js"></script>
 <script src="search.js"></script>
+<script>
+  /* ---- Recent updates: pull newest feature, review, webinar ---- */
+  function renderRecent() {
+    const grid = document.getElementById("recentGrid");
+    if (!grid) return;
+
+    const latestFeature = [...features].sort((a, b) => new Date(b.released || 0) - new Date(a.released || 0))[0];
+    const latestReview  = [...reviews].filter(r => !r.exclude).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+    const latestWebinar = [...webinars].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+
+    const cards = [];
+
+    if (latestFeature) {
+      cards.push(`
+        <a class="recent-card feature" href="features.html">
+          <div class="recent-type">new feature</div>
+          <div class="recent-date">${fmtDate(latestFeature.released)}</div>
+          <h3>${latestFeature.name}</h3>
+          <p>${latestFeature.desc}</p>
+          <span class="recent-link">open feature library →</span>
+        </a>
+      `);
+    }
+
+    if (latestReview) {
+      const co = latestReview.company && !/^(unknown|n\/?a)$/i.test(latestReview.company) ? latestReview.company : "Property manager";
+      const source = latestReview.source === 'g2' ? 'G2' : latestReview.source === 'capterra' ? 'Capterra' : 'Google';
+      const text = latestReview.text ? `"${latestReview.text.length > 140 ? latestReview.text.slice(0, 140) + "…" : latestReview.text}"` : "";
+      cards.push(`
+        <a class="recent-card review" href="reviews.html">
+          <div class="recent-type">new ${source} review</div>
+          <div class="recent-date">${fmtDate(latestReview.date)}</div>
+          <h3>${"★".repeat(latestReview.stars)} ${latestReview.name}</h3>
+          <p>${text}<br><span class="recent-meta">${co}</span></p>
+          <span class="recent-link">open reviews →</span>
+        </a>
+      `);
+    }
+
+    if (latestWebinar) {
+      cards.push(`
+        <a class="recent-card webinar" href="webinars.html">
+          <div class="recent-type">new webinar</div>
+          <div class="recent-date">${fmtDate(latestWebinar.date)}</div>
+          <h3>${latestWebinar.title}</h3>
+          <p>${latestWebinar.partner}</p>
+          <span class="recent-link">open webinars →</span>
+        </a>
+      `);
+    }
+
+    grid.innerHTML = cards.join("");
+  }
+  document.addEventListener("DOMContentLoaded", renderRecent);
+</script>
 </body>
 </html>

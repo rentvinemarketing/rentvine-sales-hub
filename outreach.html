@@ -40,7 +40,7 @@
       </div>
 
       <div class="filter-group">
-        <span class="label">What's the angle?</span>
+        <span class="label">What's the angle? <span class="optional">(pick one or combine share types)</span></span>
         <div class="chip-row" id="oType">
           <span class="chip active vine" data-value="cold-intro">cold intro</span>
           <span class="chip" data-value="share-case">share a case study</span>
@@ -52,8 +52,8 @@
       </div>
 
       <div class="filter-group" id="oContentGroup" style="display:none;">
-        <span class="label">Choose specific content</span>
-        <select id="oContent" class="o-select"></select>
+        <span class="label">Choose specific content <span class="optional">(pick one or more)</span></span>
+        <div class="chip-row chip-row-scroll" id="oContent"></div>
       </div>
 
       <div class="filter-group">
@@ -121,8 +121,8 @@
     firstName: "",
     company: "",
     channel: "email",
-    type: "cold-intro",
-    contentId: "",
+    types: new Set(["cold-intro"]),    // multi-select: cold-intro is exclusive; share-* can combine
+    contentIds: new Set(),              // each id is "type::value" so we can mix across types
     pain: "",
     tone: "warm",
     nonce: 0
@@ -138,50 +138,118 @@
       document.querySelectorAll(`#${id} .chip`).forEach(c => c.classList.remove("active","vine"));
       chip.classList.add("active","vine");
       oState[key] = chip.dataset.value;
-      if (key === "type") syncContentDropdown();
     });
   }
   setupChipGroup("oChannel", "channel");
-  setupChipGroup("oType", "type");
   setupChipGroup("oTone", "tone");
+
+  // Type chips: multi-select with cold-intro being exclusive
+  document.getElementById("oType").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    const v = chip.dataset.value;
+    const isCold = v === "cold-intro";
+
+    if (isCold) {
+      // Picking cold intro clears all share types
+      oState.types.clear();
+      oState.types.add("cold-intro");
+      document.querySelectorAll("#oType .chip").forEach(c => c.classList.remove("active","vine"));
+      chip.classList.add("active","vine");
+    } else {
+      // Picking a share-* removes cold-intro if present
+      if (oState.types.has("cold-intro")) {
+        oState.types.delete("cold-intro");
+        document.querySelector('#oType .chip[data-value="cold-intro"]').classList.remove("active","vine");
+      }
+      if (oState.types.has(v)) { oState.types.delete(v); chip.classList.remove("active","vine"); }
+      else { oState.types.add(v); chip.classList.add("active","vine"); }
+      // If nothing is selected at all, fall back to cold-intro
+      if (oState.types.size === 0) {
+        oState.types.add("cold-intro");
+        document.querySelector('#oType .chip[data-value="cold-intro"]').classList.add("active","vine");
+      }
+    }
+    syncContentDropdown();
+  });
 
   document.getElementById("oFirstName").addEventListener("input", e => oState.firstName = e.target.value);
   document.getElementById("oCompany").addEventListener("input", e => oState.company = e.target.value);
   document.getElementById("oPain").addEventListener("input", e => oState.pain = e.target.value);
-  document.getElementById("oContent").addEventListener("change", e => oState.contentId = e.target.value);
+
+  // Content chip multi-select (each chip's data-value is "type::id")
+  document.getElementById("oContent").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    const key = chip.getAttribute("data-value");
+    if (oState.contentIds.has(key)) { oState.contentIds.delete(key); chip.classList.remove("active","vine"); }
+    else { oState.contentIds.add(key); chip.classList.add("active","vine"); }
+  });
+
+  // Data sources per type
+  const TYPE_DATA = {
+    "share-case":    () => caseStudies.map(c => ({ id: c.url, label: c.customer })),
+    "share-review":  () => reviews.filter(r => r.stars === 5 && !r.exclude).slice(0, 30).map((r, i) => ({ id: String(i), label: `${r.name}${r.company && !/^(unknown|n\/?a)$/i.test(r.company) ? " · " + r.company : ""}` })),
+    "share-feature": () => features.map(f => ({ id: f.url, label: f.name })),
+    "share-report":  () => industryReports.map(r => ({ id: r.url, label: r.title })),
+    "share-webinar": () => webinars.map(w => ({ id: w.url, label: w.title }))
+  };
+  const TYPE_LABEL = {
+    "share-case":    "Case studies",
+    "share-review":  "Reviews",
+    "share-feature": "Features",
+    "share-report":  "Reports",
+    "share-webinar": "Webinars"
+  };
 
   function syncContentDropdown() {
     const group = document.getElementById("oContentGroup");
-    const sel = document.getElementById("oContent");
-    const typeToData = {
-      "share-case": () => caseStudies.map(c => ({ id: c.url, label: c.customer })),
-      "share-review": () => reviews.filter(r => r.stars === 5).slice(0, 30).map((r, i) => ({ id: i, label: `${r.name}${r.company ? " · " + r.company : ""} (${r.stars}★)` })),
-      "share-feature": () => features.map(f => ({ id: f.url, label: f.name })),
-      "share-report": () => industryReports.map(r => ({ id: r.url, label: r.title })),
-      "share-webinar": () => webinars.map(w => ({ id: w.url, label: w.title }))
-    };
-    if (typeToData[oState.type]) {
-      group.style.display = "";
-      const opts = typeToData[oState.type]();
-      sel.innerHTML = opts.map(o => `<option value="${o.id}">${o.label}</option>`).join("");
-      oState.contentId = opts[0]?.id ?? "";
-    } else {
+    const wrap = document.getElementById("oContent");
+    oState.contentIds.clear();
+
+    const shareTypes = [...oState.types].filter(t => t !== "cold-intro");
+    if (!shareTypes.length) {
       group.style.display = "none";
-      oState.contentId = "";
+      wrap.innerHTML = "";
+      return;
     }
+    group.style.display = "";
+
+    // Render sections per type
+    let html = "";
+    shareTypes.forEach(t => {
+      const opts = TYPE_DATA[t]();
+      if (!opts.length) return;
+      // Section label only when more than one type is active
+      if (shareTypes.length > 1) {
+        html += `<div class="o-content-section-label">${TYPE_LABEL[t]}</div>`;
+      }
+      html += opts.map(o => `<span class="chip" data-value="${t}::${o.id}">${o.label}</span>`).join("");
+    });
+    wrap.innerHTML = html;
   }
   syncContentDropdown();
 
   // ----- Content lookup -----
-  function getSelectedContent() {
-    const t = oState.type;
-    const id = oState.contentId;
+  function lookupOne(t, id) {
     if (t === "share-case")    return caseStudies.find(c => c.url === id);
     if (t === "share-feature") return features.find(f => f.url === id);
     if (t === "share-report")  return industryReports.find(r => r.url === id);
     if (t === "share-webinar") return webinars.find(w => w.url === id);
-    if (t === "share-review")  return reviews.filter(r => r.stars === 5).slice(0, 30)[parseInt(id, 10)];
+    if (t === "share-review")  return reviews.filter(r => r.stars === 5 && !r.exclude).slice(0, 30)[parseInt(id, 10)];
     return null;
+  }
+  function getAllSelected() {
+    // Returns [{ type, item }, ...] in the order chips were selected
+    return [...oState.contentIds].map(key => {
+      const sep = key.indexOf("::");
+      const t = key.slice(0, sep);
+      const id = key.slice(sep + 2);
+      const item = lookupOne(t, id);
+      return item ? { type: t, item } : null;
+    }).filter(Boolean);
+  }
+  function getSelectedContent() {
+    const all = getAllSelected();
+    return all.length ? all[0].item : null;
   }
 
   // ----- Templates -----
@@ -193,15 +261,15 @@
   };
 
   const PAIN_LINE = {
-    warm:         (p) => `Saw that ${p} is on your radar — wanted to share something useful.`,
+    warm:         (p) => `Saw that ${p} is on your radar. Wanted to share something useful.`,
     direct:       (p) => `Noticed ${p} is a focus for you.`,
     consultative: (p) => `Most PMs we talk to are wrestling with ${p}. Curious if that's true for you.`,
-    casual:       (p) => `Came up in convo — ${p}. Thought of you.`
+    casual:       (p) => `Came up in convo: ${p}. Thought of you.`
   };
 
   const SIGN_OFF = {
     warm:         ["Thanks,", "Best,", "Talk soon,"],
-    direct:       ["Thanks,", "—"],
+    direct:       ["Thanks,", "Best,"],
     consultative: ["Thanks,", "Best,"],
     casual:       ["Cheers,", "Thanks,"]
   };
@@ -212,22 +280,22 @@
     const pain = N(oState.pain, "");
     const tone = oState.tone;
     const channel = oState.channel;
-    const type = oState.type;
+    const isCold = oState.types.has("cold-intro");
     const greet = pick(TONE_GREETING[tone], oState.nonce);
     const sign = pick(SIGN_OFF[tone], oState.nonce);
-    const item = getSelectedContent();
 
     let subject = "";
     let body = "";
 
-    // ---- Cold intro ----
-    if (type === "cold-intro") {
+    // ---- Cold intro (always exclusive of share-*) ----
+    if (isCold) {
+      const type = "cold-intro";
       const painLine = pain ? PAIN_LINE[tone](pain) : "";
       if (channel === "linkedin") {
         const variants = [
-          `${greet} ${name}, ${painLine ? painLine + " " : ""}Rentvine is the #1-ranked PM software (PropertyManagement.com VPI report — 188K+ doors verified). Worth a quick look?`,
+          `${greet} ${name}, ${painLine ? painLine + " " : ""}Rentvine is the #1-ranked PM software (PropertyManagement.com VPI report. 188K+ doors verified). Worth a quick look?`,
           `${greet} ${name}, ${pain ? "thinking about " + pain + "? " : ""}Wanted to put Rentvine on your radar. We just topped PropertyManagement.com's VPI ranking. Open to a 15-min compare?`,
-          `${greet} ${name}, real quick — ${co} sounds like the kind of operation Rentvine fits well. 35-min support response, +85.7 NPS, no feature paywalls. Worth comparing?`
+          `${greet} ${name}, real quick on ${co} sounds like the kind of operation Rentvine fits well. 35-min support response, +85.7 NPS, no feature paywalls. Worth comparing?`
         ];
         body = pick(variants, oState.nonce);
       } else {
@@ -243,7 +311,7 @@
 
 ${painLine || "Wanted to put Rentvine on your radar."}
 
-We're the property management software that PropertyManagement.com just ranked #1 — verified by 143 operators and 656 of their clients across 188K+ doors. Strong on trust accounting, fast support (35-min average), and no feature paywalls.
+We're the property management software that PropertyManagement.com just ranked #1, verified by 143 operators and 656 of their clients across 188K+ doors. Strong on trust accounting, fast support (35-min average), and no feature paywalls.
 
 If you're benchmarking your stack, would love to compare notes. Open to a 15-min call this week?
 
@@ -266,110 +334,155 @@ ${sign}
       }
     }
 
-    // ---- Share a case study ----
-    else if (type === "share-case" && item) {
-      const switchedFrom = {
-        appfolio: "moved off AppFolio",
-        propertyware: "made the switch from Propertyware",
-        legacy: "swapped out their old software"
-      }[item.switched] || "switched to Rentvine";
-      if (channel === "linkedin") {
-        body = `${greet} ${name}, ${pain ? "thinking about " + pain + " — " : ""}this case study might land. ${item.customer} ${switchedFrom} and shared what changed. ${item.url}`;
-      } else {
-        subject = `Thought you'd want to see this — ${item.customer}`;
-        body =
+    // ---- Share content (case / review / feature / report / webinar) ----
+    else {
+      const selected = getAllSelected(); // [{ type, item }, ...]
+      if (!selected.length) {
+        body = "Pick at least one piece of content above (chips appear under \"Choose specific content\") then hit generate.";
+        return { subject, body };
+      }
+
+      // Helpers — bullet line per type
+      function renderBullet(t, it) {
+        if (t === "share-case") {
+          const sf = { appfolio: "switched from AppFolio", propertyware: "switched from Propertyware", legacy: "swapped out legacy software" }[it.switched] || "switched to Rentvine";
+          const link = it.pdfUrl || it.url;
+          return `· Case study: ${it.customer} (${sf}). ${link}`;
+        }
+        if (t === "share-review") {
+          const co2 = it.company && !/^(unknown|n\/?a)$/i.test(it.company) ? `, ${it.company}` : "";
+          return `· Review: "${(it.text || "(5-star review)").slice(0, 140)}", ${it.name}${co2}`;
+        }
+        if (t === "share-feature") return `· Feature: ${it.name}. ${it.url}`;
+        if (t === "share-report")  return `· Report: ${it.title}. ${it.url}`;
+        if (t === "share-webinar") return `· Webinar: ${it.title} (${it.partner}). ${it.url}`;
+        return "";
+      }
+
+      // Determine if all selected items are the same type
+      const allTypes = new Set(selected.map(s => s.type));
+      const singleType = allTypes.size === 1 ? [...allTypes][0] : null;
+
+      // ---- Single item (rich, focused message) ----
+      if (selected.length === 1) {
+        const { type, item: it } = selected[0];
+        if (type === "share-case") {
+          const switchedFrom = { appfolio: "moved off AppFolio", propertyware: "made the switch from Propertyware", legacy: "swapped out their old software" }[it.switched] || "switched to Rentvine";
+          const pdfLine = it.pdfUrl ? `\nPDF version: ${it.pdfUrl}` : "";
+          if (channel === "linkedin") {
+            // LinkedIn keeps it short. Use PDF link if available (more shareable than blog).
+            const link = it.pdfUrl || it.url;
+            body = `${greet} ${name}, ${pain ? "thinking about " + pain + ", " : ""}this case study might land. ${it.customer} ${switchedFrom} and shared what changed. ${link}`;
+          } else {
+            subject = `Thought you'd want to see this. ${it.customer}`;
+            body =
 `${greet} ${name},
 
-This case study might be helpful as we continue our conversation. ${item.customer} ${switchedFrom} and shared what changed${pain ? ", especially around " + pain : ""}.
+This case study might be helpful as we continue our conversation. ${it.customer} ${switchedFrom} and shared what changed${pain ? ", especially around " + pain : ""}.
 
-${item.url}
+${it.url}${pdfLine}
 
 ${sign}
 [your name]`;
-      }
-    }
-
-    // ---- Share a review ----
-    else if (type === "share-review" && item) {
-      const source = item.source === 'g2' ? 'G2' : item.source === 'capterra' ? 'Capterra' : 'Google';
-      const co2 = item.company && !/^(unknown|n\/?a)$/i.test(item.company) ? `, ${item.company}` : "";
-      if (channel === "linkedin") {
-        body = `${greet} ${name}, came across this ${source} review and thought it might be helpful for you and your team:\n\n"${item.text || ""}"\n${item.name}${co2}`;
-      } else {
-        subject = `A real review from a property manager`;
-        body =
+          }
+        } else if (type === "share-review") {
+          const source = it.source === 'g2' ? 'G2' : it.source === 'capterra' ? 'Capterra' : 'Google';
+          const co2 = it.company && !/^(unknown|n\/?a)$/i.test(it.company) ? `, ${it.company}` : "";
+          if (channel === "linkedin") {
+            body = `${greet} ${name}, came across this ${source} review and thought it might be helpful for you and your team:\n\n"${it.text || ""}"\n${it.name}${co2}`;
+          } else {
+            subject = `A real review from a property manager`;
+            body =
 `${greet} ${name},
 
 Came across this ${source} review and thought it might be helpful for you and your team:
 
-"${item.text || ""}"
-${item.name}${co2}
+"${it.text || ""}"
+${it.name}${co2}
 
 ${sign}
 [your name]`;
-      }
-    }
-
-    // ---- Share a feature ----
-    else if (type === "share-feature" && item) {
-      if (channel === "linkedin") {
-        body = `${greet} ${name}, quick share — Rentvine's ${item.name}. ${item.desc.split(".")[0]}. ${item.url}`;
-      } else {
-        subject = `Quick share — Rentvine's ${item.name}`;
-        body =
+          }
+        } else if (type === "share-feature") {
+          if (channel === "linkedin") {
+            body = `${greet} ${name}, quick share. Rentvine's ${it.name}. ${it.desc.split(".")[0]}. ${it.url}`;
+          } else {
+            subject = `Quick share. Rentvine's ${it.name}`;
+            body =
 `${greet} ${name},
 
-Thought this might be helpful for you and your team — quick look at Rentvine's ${item.name}.
+Thought this might be helpful for you and your team. Quick look at Rentvine's ${it.name}.
 
-${item.desc}
+${it.desc}
 
-${item.url}
+${it.url}
 
 ${sign}
 [your name]`;
+          }
+        } else if (type === "share-report") {
+          const body2 = it.snippet || `Sharing ${it.title}.`;
+          if (channel === "linkedin") {
+            body = `${greet} ${name}, ${body2} ${it.url}`;
+          } else {
+            subject = it.title;
+            body = `${greet} ${name},\n\n${body2}\n\n${it.url}\n\n${sign}\n[your name]`;
+          }
+        } else if (type === "share-webinar") {
+          const body2 = it.snippet || `Sharing a recent webinar with ${it.partner}: ${it.title}.`;
+          if (channel === "linkedin") {
+            body = `${greet} ${name}, ${body2} ${it.url}`;
+          } else {
+            subject = `Webinar: ${it.title}`;
+            body = `${greet} ${name},\n\n${body2}\n\n${it.url}\n\n${sign}\n[your name]`;
+          }
+        }
       }
-    }
 
-    // ---- Share a report ----
-    else if (type === "share-report" && item) {
-      const body2 = item.snippet || `Sharing ${item.title}.`;
-      if (channel === "linkedin") {
-        body = `${greet} ${name}, ${body2} ${item.url}`;
-      } else {
-        subject = item.title;
-        body =
+      // ---- Multiple items ----
+      else {
+        // Single-type bundle (e.g., 3 case studies)
+        let intro, subj;
+        if (singleType) {
+          intro = {
+            "share-case":    `Pulled a few customer stories that might land${pain ? " given " + pain : ""}.`,
+            "share-review":  `Sharing a few recent reviews that might be useful for you and your team.`,
+            "share-feature": `A few Rentvine features worth a look${pain ? ", given " + pain : ""}.`,
+            "share-report":  `A couple of reports worth a skim.`,
+            "share-webinar": `A few webinars worth bookmarking.`
+          }[singleType];
+          subj = {
+            "share-case":    `A few customer stories worth a look`,
+            "share-review":  `A few reviews from property managers`,
+            "share-feature": `A few Rentvine features for your team`,
+            "share-report":  `Two reports worth your time`,
+            "share-webinar": `A few webinars worth a bookmark`
+          }[singleType];
+        }
+        // Mixed-type bundle (e.g., case study + review + feature)
+        else {
+          intro = `Pulled a few resources that might be helpful for you and your team${pain ? ", especially around " + pain : ""}.`;
+          subj  = `A few things worth your time`;
+        }
+
+        const bullets = selected.map(({ type, item }) => renderBullet(type, item)).join("\n");
+
+        if (channel === "linkedin") {
+          // Keep it tight on LinkedIn. Intro + bullets, no signoff
+          body = `${greet} ${name}, ${intro.toLowerCase()}\n\n${bullets}`;
+        } else {
+          subject = subj;
+          body =
 `${greet} ${name},
 
-${body2}
+${intro}
 
-${item.url}
-
-${sign}
-[your name]`;
-      }
-    }
-
-    // ---- Share a webinar ----
-    else if (type === "share-webinar" && item) {
-      const body2 = item.snippet || `Sharing a recent webinar with ${item.partner}: ${item.title}.`;
-      if (channel === "linkedin") {
-        body = `${greet} ${name}, ${body2} ${item.url}`;
-      } else {
-        subject = `Webinar: ${item.title}`;
-        body =
-`${greet} ${name},
-
-${body2}
-
-${item.url}
+${bullets}
 
 ${sign}
 [your name]`;
+        }
       }
-    }
-
-    else {
-      body = "Pick an angle and (if relevant) a piece of content, then hit generate.";
     }
 
     return { subject, body };
@@ -433,7 +546,7 @@ ${sign}
     if (oState.channel === "linkedin") {
       // LinkedIn doesn't support pre-filled DMs. Copy to clipboard and open LinkedIn.
       navigator.clipboard.writeText(body).then(() => {
-        flashStatus("✓ copied — paste into LinkedIn");
+        flashStatus("✓ copied. Paste into LinkedIn");
         window.open("https://www.linkedin.com/messaging/", "_blank", "noopener");
       });
     } else {
@@ -445,23 +558,34 @@ ${sign}
 
   // Build AI prompt with full context for Claude/ChatGPT
   document.getElementById("oCopyAI").addEventListener("click", () => {
-    const item = getSelectedContent();
-    const itemContext = item ? `\n\nContext on the content I want to share:\n${JSON.stringify(item, null, 2)}` : "";
+    const selected = getAllSelected();
+    const isCold = oState.types.has("cold-intro");
+
+    let goal;
+    if (isCold) {
+      goal = "send a cold introduction";
+    } else {
+      const typeNames = {
+        "share-case": "case study",
+        "share-review": "customer review",
+        "share-feature": "Rentvine feature",
+        "share-report": "industry report",
+        "share-webinar": "webinar recording"
+      };
+      const uniqueTypes = [...new Set(selected.map(s => typeNames[s.type] || s.type))];
+      goal = `share ${selected.length} item${selected.length > 1 ? "s" : ""} (${uniqueTypes.join(" + ")})`;
+    }
+
+    const itemContext = selected.length
+      ? `\n\nContext on the content I want to share (${selected.length} item${selected.length > 1 ? "s" : ""}):\n${JSON.stringify(selected.map(s => ({ type: s.type, ...s.item })), null, 2)}`
+      : "";
 
     const channelLabel = { email: "cold email", "warm-email": "warm email", linkedin: "linkedin dm", followup: "follow-up message" }[oState.channel];
-    const typeLabel = {
-      "cold-intro": "cold introduction",
-      "share-case": "share a customer case study",
-      "share-review": "share a customer review",
-      "share-feature": "share a Rentvine feature",
-      "share-report": "share an industry report",
-      "share-webinar": "share a webinar recording"
-    }[oState.type];
 
     const prompt =
 `You are writing for Rentvine, the #1-ranked property management software (PropertyManagement.com VPI report). Voice is personable, direct, no jargon, no em dashes, sentence case in titles.
 
-Write a ${channelLabel} for me. Goal: ${typeLabel}.
+Write a ${channelLabel} for me. Goal: ${goal}.
 
 Recipient:
 - First name: ${N(oState.firstName, "[unknown]")}
@@ -472,7 +596,7 @@ Tone: ${oState.tone}
 ${itemContext}
 
 Rules:
-- ${oState.channel === "linkedin" ? "Keep it under 3 sentences. No subject line." : "Include a subject line (under 8 words) and a 4-6 sentence body."}
+- ${oState.channel === "linkedin" ? "Keep it under 4 sentences. No subject line." : "Include a subject line (under 8 words) and a 4-8 sentence body. If multiple items, present them as a tight bulleted list."}
 - No em dashes. Use periods or commas.
 - Sound human and quippy. Avoid corporate speak ("cutting-edge", "robust", "seamless").
 - End with a clear, low-friction CTA.
@@ -480,7 +604,7 @@ Rules:
 Draft below:`;
 
     navigator.clipboard.writeText(prompt).then(() => {
-      flashStatus("✓ AI prompt copied — paste into Claude or ChatGPT");
+      flashStatus("✓ AI prompt copied. Paste into Claude or ChatGPT");
     });
   });
 

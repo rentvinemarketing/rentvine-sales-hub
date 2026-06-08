@@ -21,11 +21,12 @@ const SNIPPET = {
       propertyware: "made the switch from Propertyware",
       legacy: "swapped out their old software"
     }[c.switched] || "switched to Rentvine";
+    const pdfLine = c.pdfUrl ? `\nPDF: ${c.pdfUrl}` : "";
     return `Hi [first name],
 
 This case study might be helpful as we continue our conversation. ${c.customer} ${switchedFrom} and shared what changed.
 
-${c.url}
+${c.url}${pdfLine}
 
 Thanks,
 [your name]`;

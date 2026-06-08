@@ -37,6 +37,7 @@ const caseStudies = [
     tags: ["switching","accounting","migration","onboarding","support","growth","data"],
     tagsLabel: ["switching","accounting","migration","onboarding","customer support","growth","trust accounting"],
     url: "https://www.rentvine.com/blog/sapir-realty-case-study",
+    pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22182824",
     highlight: ["switching","accounting"]
   },
   {
@@ -48,6 +49,7 @@ const caseStudies = [
     tags: ["switching","api","onboarding","support","ai","data","migration"],
     tagsLabel: ["switching","open API","onboarding","customer support","AI","integrations","migration"],
     url: "https://www.rentvine.com/blog/performance-asset-management-embraces-the-future-of-property-management-with-rentvine",
+    pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22182821",
     highlight: ["api","ai"]
   },
   {
@@ -59,6 +61,7 @@ const caseStudies = [
     tags: ["switching","migration","accounting","onboarding","support"],
     tagsLabel: ["switching","migration","accounting","onboarding","user adoption"],
     url: "https://www.rentvine.com/blog/prandi-property-management-transitioning-to-rentvine-for-a-more-efficient-property-management",
+    pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22182816",
     highlight: ["switching","migration"]
   },
   {
@@ -70,6 +73,7 @@ const caseStudies = [
     tags: ["switching","support","onboarding","migration","data"],
     tagsLabel: ["switching","customer support","onboarding","migration","scalability"],
     url: "https://www.rentvine.com/blog/from-frustration-to-efficiency-how-rentvine-revolutionized-our-property-management-company",
+    pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22183058",
     highlight: ["support"]
   },
   {
@@ -81,6 +85,7 @@ const caseStudies = [
     tags: ["support","api","switching"],
     tagsLabel: ["customer support","open API","tech stack"],
     url: "https://www.rentvine.com/blog/transforming-property-management-client-success-stories-with-renters-place",
+    pdfUrl: "https://app.hubspot.com/documents/9252921/preview/22183065",
     highlight: ["support","api"]
   },
   {
@@ -92,6 +97,7 @@ const caseStudies = [
     tags: ["switching","support","api"],
     tagsLabel: ["switching","customer support","open API","tech stack"],
     url: "https://www.rentvine.com/blog/eaton-realtys-experience-with-rentvine",
+    pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22185810",
     highlight: ["api","support"]
   }
 ];
@@ -102,7 +108,7 @@ const caseStudies = [
    Sorted newest-first by review date.
 */
 const reviews = [
-  { name: "Mickayla Harrison", company: null, territory: null, source: "google", stars: 1, date: "2026-05-27", text: "If I could give less than 1 star I would. The worst property management company ever. They charged more than our deposit upon move out, even with proof that the problems were pre existing. They never have maintenance actually fix problems, just bandaid it. Literally would recommend living in a slum before working with them.", tags: ["accounting","maintenance"], hsId: null },
+  { name: "Mickayla Harrison", company: null, territory: null, source: "google", stars: 1, date: "2026-05-27", text: "If I could give less than 1 star I would. The worst property management company ever. They charged more than our deposit upon move out, even with proof that the problems were pre existing. They never have maintenance actually fix problems, just bandaid it. Literally would recommend living in a slum before working with them.", tags: ["accounting","maintenance"], hsId: null, exclude: true, excludeReason: "Tenant complaint about the PM company, not a Rentvine customer review." },
   { name: "Michelle Grohe", company: "Real True PM", territory: "VA", source: "g2", stars: 5, date: "2026-05-24", text: "Incredible Support and an Great User Experience", tags: ["support"], hsId: null },
   { name: "Wendy Almand", company: null, territory: null, source: "google", stars: 5, date: "2026-05-20", text: "I had an accounting issue that resulted from my mistake early on in the Rentvine conversion. Jake was so patient and thorough with helping me correct the issue. We had over 20 emails back and forth. He never gave up on me. Jake is a true asset to Rentvine.", tags: ["support","switching","accounting"], hsId: null },
   { name: "Phil Lehman", company: "Hometown Property Management", territory: "PA", source: "g2", stars: 5, date: "2026-05-19", text: "User-Friendly Property Management with Stellar Support", tags: ["support","easy-to-use"], hsId: null },

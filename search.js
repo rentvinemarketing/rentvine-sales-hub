@@ -89,6 +89,7 @@ function searchAll(query, typeFilter = "all") {
   // Reviews
   if ((typeFilter === "all" || typeFilter === "review") && typeof reviews !== "undefined") {
     reviews.forEach((r, i) => {
+      if (r.exclude) return; // hide tenant/vendor complaints
       const hay = [r.name, r.company, r.text, r.territory, r.source, ...(r.tags || [])].join(" ").toLowerCase();
       if (hay.includes(q)) {
         const source = r.source === 'g2' ? 'G2' : r.source === 'capterra' ? 'Capterra' : 'Google';

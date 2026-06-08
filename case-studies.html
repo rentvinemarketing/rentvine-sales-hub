@@ -45,6 +45,8 @@
       <div class="filter-group">
         <span class="label">Location</span>
         <div class="chip-row" data-case-filter="location">
+          <span class="chip" data-value="northeast">Northeast</span>
+          <span class="chip" data-value="northwest">Northwest</span>
           <span class="chip" data-value="west">West Coast</span>
           <span class="chip" data-value="midwest">Midwest</span>
           <span class="chip" data-value="south">South</span>
@@ -104,24 +106,53 @@
     if (!filtered.length) { wrap.innerHTML = ""; empty.style.display = "block"; return; }
     empty.style.display = "none";
     wrap.innerHTML = filtered.map((c, idx) => `
-      <a class="case-card" href="${c.url}" target="_blank" rel="noopener">
-        <span class="switched-badge ${c.switched}">${c.switchedLabel}</span>
-        <h3>${c.customer}</h3>
-        <div class="quote">"${c.quote}"</div>
-        <div class="meta">
-          <span>${ICONS.role}${c.role}</span>
-          <span>${ICONS.units}${c.unitsLabel}</span>
-          <span>${ICONS.loc}${c.locationLabel}</span>
+      <div class="case-card-wrap">
+        <a class="case-card" href="${c.url}" target="_blank" rel="noopener">
+          <span class="switched-badge ${c.switched}">${c.switchedLabel}</span>
+          <h3>${c.customer}</h3>
+          <div class="quote">"${c.quote}"</div>
+          <div class="meta">
+            <span>${ICONS.role}${c.role}</span>
+            <span>${ICONS.units}${c.unitsLabel}</span>
+            <span>${ICONS.loc}${c.locationLabel}</span>
+          </div>
+          <div class="tags">
+            ${c.tagsLabel.map((t, i) => `<span class="tag ${c.highlight && c.highlight.includes(c.tags[i]) ? 'hl' : ''}">${t}</span>`).join("")}
+          </div>
+          <div class="card-footer-row">
+            <span class="read-link">read story</span>
+            ${shareBtnHtml('case', idx)}
+          </div>
+        </a>
+        ${c.pdfUrl ? `
+        <div class="case-pdf-row">
+          <a class="case-pdf-btn" href="${c.pdfUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            view PDF
+          </a>
+          <button class="case-pdf-copy" type="button" data-pdf-url="${c.pdfUrl}" data-customer="${c.customer.replace(/"/g, '&quot;')}" title="Copy PDF link to share">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            copy link
+          </button>
         </div>
-        <div class="tags">
-          ${c.tagsLabel.map((t, i) => `<span class="tag ${c.highlight && c.highlight.includes(c.tags[i]) ? 'hl' : ''}">${t}</span>`).join("")}
-        </div>
-        <div class="card-footer-row">
-          <span class="read-link">read story</span>
-          ${shareBtnHtml('case', idx)}
-        </div>
-      </a>
+        ` : ''}
+      </div>
     `).join("");
+
+    // Wire up copy buttons
+    wrap.querySelectorAll('.case-pdf-copy').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const url = btn.dataset.pdfUrl;
+        navigator.clipboard.writeText(url).then(() => {
+          const orig = btn.innerHTML;
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> copied';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 1800);
+        });
+      });
+    });
   }
 
   document.getElementById("caseSearch").addEventListener("input", e => { cState.search = e.target.value; renderCases(); });

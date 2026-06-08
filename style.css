@@ -601,6 +601,58 @@ code { background: var(--bg-elevated-2); padding: 1px 6px; border-radius: 4px; c
 .case-card:hover .read-link::after { transform: translateX(3px); }
 
 /* ============================================================
+   CASE STUDY PDF ATTACHMENT ROW
+   ============================================================ */
+.case-card-wrap {
+  display: flex;
+  flex-direction: column;
+}
+.case-card-wrap .case-card { flex: 1; }
+.case-pdf-row {
+  display: flex;
+  gap: 8px;
+  margin-top: -1px;
+  background: var(--bg-elevated-2);
+  border: 1px solid var(--border);
+  border-top: 1px dashed var(--border-strong);
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 10px 14px;
+}
+.case-pdf-btn,
+.case-pdf-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: lowercase;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .15s;
+}
+.case-pdf-btn:hover {
+  color: var(--vine);
+  border-color: var(--vine);
+  background: var(--dew);
+}
+.case-pdf-copy:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: var(--bg-elevated-3);
+}
+.case-pdf-copy.copied {
+  color: var(--vine);
+  border-color: var(--vine);
+  background: var(--dew);
+}
+
+/* ============================================================
    REVIEWS
    ============================================================ */
 .source-toggle {
@@ -1626,6 +1678,93 @@ code { background: var(--bg-elevated-2); padding: 1px 6px; border-radius: 4px; c
 }
 
 /* ============================================================
+   RECENT UPDATES (home)
+   ============================================================ */
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.recent-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+  position: relative;
+  overflow: hidden;
+}
+.recent-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--vine);
+}
+.recent-card.review::before { background: var(--blue); }
+.recent-card.webinar::before { background: var(--lava); }
+.recent-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--vine);
+  background: var(--bg-elevated-2);
+}
+.recent-card .recent-type {
+  font-family: 'Manrope', sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--vine);
+  display: inline-block;
+  padding: 3px 9px;
+  background: var(--dew);
+  border-radius: 5px;
+  width: fit-content;
+}
+.recent-card.review .recent-type { color: var(--blue); background: var(--sky); }
+.recent-card.webinar .recent-type { color: var(--lava); background: var(--blush); }
+.recent-card .recent-date {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+.recent-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--text);
+}
+.recent-card p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  flex: 1;
+}
+.recent-card .recent-meta {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+.recent-card .recent-link {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--vine);
+  margin-top: 4px;
+  text-transform: lowercase;
+}
+.recent-card.review .recent-link { color: var(--blue); }
+.recent-card.webinar .recent-link { color: var(--lava); }
+
+/* ============================================================
    OUTREACH GENERATOR
    ============================================================ */
 .outreach-grid {
@@ -1797,6 +1936,33 @@ code { background: var(--bg-elevated-2); padding: 1px 6px; border-radius: 4px; c
   font-size: 12px;
   color: var(--text-tertiary);
   margin: 0;
+}
+.chip-row-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.chip-row-scroll::-webkit-scrollbar { width: 6px; }
+.chip-row-scroll::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated-3);
+  border-radius: 3px;
+}
+.o-content-section-label {
+  width: 100%;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 8px 0 4px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+}
+.o-content-section-label:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 @media (max-width: 920px) {

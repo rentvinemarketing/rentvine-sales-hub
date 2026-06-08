@@ -42,6 +42,14 @@
           <span class="chip star-chip" data-value="1"><span class="star-icon">★</span>1</span>
         </div>
       </div>
+      <div class="filter-group">
+        <span class="label">Recency</span>
+        <div class="chip-row" id="recencyFilter">
+          <span class="chip" data-value="30">last 30 days</span>
+          <span class="chip" data-value="90">last 90 days</span>
+          <span class="chip" data-value="365">last year</span>
+        </div>
+      </div>
       <div class="filter-group" style="grid-column: span 2;">
         <span class="label">Theme</span>
         <div class="chip-row" id="reviewTags">
@@ -78,13 +86,20 @@
 <script src="share.js"></script>
 <script src="search.js"></script>
 <script>
-  const rState = { source: "all", tags: new Set(), stars: new Set(), shown: 6, batch: 6 };
+  const rState = { source: "all", tags: new Set(), stars: new Set(), recency: null, shown: 6, batch: 6 };
 
   function getFiltered() {
+    const now = Date.now();
     return reviews.filter(r => {
+      if (r.exclude) return false;                                        // hide tenant/vendor complaints
       if (rState.source !== "all" && r.source !== rState.source) return false;
       if (rState.stars.size && !rState.stars.has(String(r.stars))) return false;
       if (rState.tags.size && ![...rState.tags].some(t => r.tags.includes(t))) return false;
+      if (rState.recency) {
+        const ageMs = now - new Date(r.date).getTime();
+        const maxMs = parseInt(rState.recency, 10) * 24 * 60 * 60 * 1000;
+        if (ageMs > maxMs) return false;
+      }
       return true;
     }).sort((a, b) => new Date(b.date) - new Date(a.date));
   }
@@ -179,10 +194,26 @@
     renderReviews(true);
   });
 
+  // Recency chips (single-select — picking another replaces)
+  document.getElementById("recencyFilter").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    const v = chip.getAttribute("data-value");
+    const wasActive = chip.classList.contains("active");
+    document.querySelectorAll("#recencyFilter .chip").forEach(c => c.classList.remove("active","blue"));
+    if (wasActive) {
+      rState.recency = null;
+    } else {
+      chip.classList.add("active","blue");
+      rState.recency = v;
+    }
+    renderReviews(true);
+  });
+
   // Clear
   document.getElementById("reviewClear").addEventListener("click", () => {
     rState.tags.clear();
     rState.stars.clear();
+    rState.recency = null;
     rState.source = "all";
     document.querySelectorAll(".chip.active").forEach(c => c.classList.remove("active","honey","vine"));
     document.querySelectorAll("#sourceToggle button").forEach(b => b.classList.toggle("active", b.dataset.source === "all"));
