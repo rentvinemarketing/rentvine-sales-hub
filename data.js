@@ -29,6 +29,17 @@ const hsUrl = (id) => `https://app.hubspot.com/contacts/${HS_PORTAL}/record/0-1/
 /* -------- CASE STUDIES -------- */
 const caseStudies = [
   {
+    customer: "Sunlight Property Management", role: "Owner Amy Mullaney",
+    switched: "legacy", switchedLabel: "Switched from legacy software",
+    units: "small", unitsLabel: "~200 doors",
+    location: "northwest", locationLabel: "Laurel, Montana",
+    quote: "When I went over to Rentvine, it just made so much more sense to me. And my team.",
+    tags: ["switching","growth","accounting","maintenance","onboarding","support","migration"],
+    tagsLabel: ["switching","growth","accounting","maintenance","onboarding","customer support","migration"],
+    url: "https://www.rentvine.com/blog/the-right-time-to-switch--how-growth-forced-better-systems-for-sunlight-property-management-",
+    highlight: ["growth","accounting"]
+  },
+  {
     customer: "Sapir Realty", role: "CFO Mutik Schusterman",
     switched: "appfolio", switchedLabel: "Switched from AppFolio",
     units: "large", unitsLabel: "1,000+ properties",
@@ -199,7 +210,7 @@ const industryReports = [
     note: "Rentvine ranked #1. Independently verified by PropertyManagement.com.",
     tags: ["vpi","ranked-1","competitive-data","switching"],
     landingUrl: "https://www.rentvine.com/pm-vpi-report",
-    url: "https://hs-9252921.f.hubspotemail.net/hubfs/9252921/2026-industry-report-1776402378621.pdf",
+    url: "https://9252921.fs1.hubspotusercontent-na1.net/hubfs/9252921/PropertyManagement_VPI_PMS_Report_2026%20(5).pdf",
     snippet: "PropertyManagement.com just ranked Rentvine the #1 PM software, verified by 143 operators and 656 of their clients across 188K+ doors. Thought you'd want the full breakdown.",
     color: "vine"
   }
