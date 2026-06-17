@@ -3,22 +3,33 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Industry reports · Rentvine sales hub</title>
+<title>PR · Rentvine sales hub</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body data-page="industry-reports">
 
 <section class="hero hero-sub">
   <div class="hero-inner">
-    <span class="eyebrow">research · benchmarks · data</span>
-    <h1>Industry reports.</h1>
-    <p class="lead">Research and benchmark reports to share with prospects. Real data on what landlords expect and where the industry is heading.</p>
+    <span class="eyebrow">press releases · industry reports · benchmarks</span>
+    <h1>PR.</h1>
+    <p class="lead">Press releases, industry reports, and benchmark data. Share with prospects to anchor competitive conversations and validate the Rentvine story.</p>
   </div>
 </section>
 
 <section class="container section">
+  <div class="toolbar" style="padding: 14px 18px;">
+    <div class="filter-group" style="margin: 0;">
+      <span class="label">Filter</span>
+      <div class="chip-row" id="prFilter">
+        <span class="chip active vine" data-value="all">all</span>
+        <span class="chip" data-value="press">press releases</span>
+        <span class="chip" data-value="report">industry reports</span>
+      </div>
+    </div>
+  </div>
+
   <div class="results-meta">
-    <span><b id="reportCount">0</b> reports</span>
+    <span><b id="reportCount">0</b> items</span>
   </div>
 
   <div class="report-grid" id="reportGrid"></div>
@@ -29,11 +40,29 @@
 <script src="share.js"></script>
 <script src="search.js"></script>
 <script>
+  let prState = { type: "all" };
+
+  document.getElementById("prFilter").addEventListener("click", e => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    document.querySelectorAll("#prFilter .chip").forEach(c => c.classList.remove("active","vine"));
+    chip.classList.add("active","vine");
+    prState.type = chip.dataset.value;
+    renderReports();
+  });
+
   function renderReports() {
-    setShareItems('report', industryReports);
-    document.getElementById("reportCount").textContent = industryReports.length;
-    document.getElementById("reportGrid").innerHTML = industryReports.map((r, i) => `
-      <div class="report-card ${r.color || ''}">
+    const filtered = industryReports.filter(r => prState.type === "all" || (r.type || "report") === prState.type);
+    setShareItems('report', filtered);
+    document.getElementById("reportCount").textContent = filtered.length;
+    document.getElementById("reportGrid").innerHTML = filtered.map((r, i) => {
+      const isPress = r.type === "press";
+      const typeBadge = isPress
+        ? '<span class="pr-type-badge press">press release</span>'
+        : '<span class="pr-type-badge report">industry report</span>';
+      const downloadLabel = isPress ? "read release" : "download pdf";
+      return `
+      <div class="report-card ${r.color || ''} ${isPress ? 'is-press' : ''}">
+        ${typeBadge}
         <div class="report-meta-row">
           <span class="publisher">${r.publisherShort || r.publisher}</span>
           <span>· ${r.year}</span>
@@ -50,15 +79,17 @@
         <div class="report-actions">
           <div class="report-actions-primary">
             <a class="download-btn" href="${r.url}" target="_blank" rel="noopener">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              download pdf
+              ${isPress
+                ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><line x1="18" y1="14" x2="12" y2="14"/><line x1="18" y1="18" x2="12" y2="18"/><line x1="13" y1="6" x2="18" y2="6"/><line x1="13" y1="10" x2="18" y2="10"/></svg>'
+                : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'}
+              ${downloadLabel}
             </a>
             ${r.landingUrl ? `<a class="learn-more-link" href="${r.landingUrl}" target="_blank" rel="noopener">read more →</a>` : ''}
           </div>
           ${shareBtnHtml('report', i)}
         </div>
-      </div>
-    `).join("");
+      </div>`;
+    }).join("");
   }
   renderReports();
 </script>
