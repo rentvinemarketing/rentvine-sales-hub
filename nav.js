@@ -24,7 +24,7 @@ function renderHeader() {
     { id: "reviews",           label: "reviews",          href: "reviews.html" },
     { id: "features",          label: "features",         href: "features.html" },
     { id: "webinars",          label: "webinars",         href: "webinars.html" },
-    { id: "industry-reports",  label: "industry reports", href: "industry-reports.html" },
+    { id: "industry-reports",  label: "PR",               href: "industry-reports.html" },
     { id: "outreach",          label: "outreach",         href: "outreach.html" }
   ];
 

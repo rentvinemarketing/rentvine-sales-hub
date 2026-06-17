@@ -205,7 +205,7 @@ function runSearch() {
     review: { label: "Reviews", count: byType.review.length },
     feature: { label: "Features", count: byType.feature.length },
     webinar: { label: "Webinars", count: byType.webinar.length },
-    report: { label: "Industry reports", count: byType.report.length }
+    report: { label: "PR (press + reports)", count: byType.report.length }
   };
 
   let html = `<div class="gs-result-count">${results.length} result${results.length === 1 ? "" : "s"} for "<b>${q.replace(/[<>]/g, "")}</b>"</div>`;

@@ -170,9 +170,54 @@ const reviews = [
   { name: "Kyle Isaacs", company: null, territory: null, source: "google", stars: 5, date: "2026-02-20", text: "Absolutely loved working with this team. They listened, moved quickly, and accommodated my quick timeline. I'm really glad that I made the decision to work with them.", tags: [], hsId: null }
 ];
 
-/* -------- INDUSTRY REPORTS -------- */
+/* -------- PR (industry reports + press releases) -------- */
 const industryReports = [
   {
+    type: "press",
+    title: "Rentvine named #1 property management software",
+    publisher: "Rentvine press release",
+    publisherShort: "Press release · June 11, 2026",
+    year: "2026",
+    pages: "Press release",
+    date: "2026-06-11",
+    desc: "Rentvine officially named #1 in PropertyManagement.com's 2026 Vendor Performance Index, sweeping 4 of 6 category awards: Category Leader, Happiest Customer, Best Value, and Easiest to Use.",
+    stats: [
+      "#1 VPI score in the category, highest of any PMS evaluated.",
+      "+61.3 operator NPS — roughly 4× the next major competitor.",
+      "85.9 support quality — more than double either closest competitor's perfect-5 rate.",
+      "+85.7 client NPS — 27 points above the nearest incumbent."
+    ],
+    audience: "Prospects comparing Rentvine vs. AppFolio / Buildium / Propertyware. Use as third-party validation.",
+    note: "Press release. Use to anchor competitive conversations.",
+    tags: ["vpi","ranked-1","competitive-data","press","switching"],
+    url: "https://www.rentvine.com/blog/rentvine-named-1-property-management-software",
+    snippet: "Rentvine was just named #1 in PropertyManagement.com's 2026 VPI report. We swept 4 of 6 categories: Category Leader, Happiest Customer, Best Value, and Easiest to Use. Thought it might be useful for you.",
+    color: "vine"
+  },
+  {
+    type: "press",
+    title: "Rentvine unveils industry-first MCP and Pro Skills at Be Herd 2026",
+    publisher: "Rentvine press release",
+    publisherShort: "Press release · May 20, 2026",
+    year: "2026",
+    pages: "Press release",
+    date: "2026-05-20",
+    desc: "Rentvine became the first property management and accounting platform in single-family rentals to adopt the Model Context Protocol (MCP), and previewed Pro Skills, an agent workforce that runs inside Rentvine's trust accounting and permissions guardrails.",
+    stats: [
+      "First PMS in single-family rentals to adopt MCP.",
+      "350+ property management pros at Be Herd User Conference, Tampa.",
+      "Pro Skills agent workforce previewed as the next major platform shift.",
+      "Live MCP queries running against real Rentvine accounting data."
+    ],
+    audience: "Prospects evaluating AI-native or open-API platforms. Forward-looking PMs.",
+    note: "Press release. Use to anchor AI and platform conversations.",
+    tags: ["mcp","ai","press","innovation","open-api"],
+    url: "https://www.rentvine.com/blog/rentvine-unveils-industry-first-mcp",
+    snippet: "Rentvine is now the first PMS in single-family rentals to adopt the Model Context Protocol (MCP), and we previewed Pro Skills, an agent workforce that runs inside our trust accounting guardrails. Thought you'd want a read.",
+    color: "vine"
+  },
+  {
+    type: "report",
     title: "What 500 landlords really think about property managers",
     publisher: "Jordan Muela & Peter Lohmann · fielded by Harris Poll",
     publisherShort: "Muela + Lohmann (independent)",
@@ -194,6 +239,7 @@ const industryReports = [
     color: "vine"
   },
   {
+    type: "report",
     title: "PropertyManagement.com VPI report",
     publisher: "PropertyManagement.com",
     publisherShort: "PropertyManagement.com",

@@ -1547,6 +1547,29 @@ code { background: var(--bg-elevated-2); padding: 1px 6px; border-radius: 4px; c
   background: var(--vine);
 }
 .report-card.blue::before { background: var(--blue); }
+.report-card.is-press::before { background: var(--lava); }
+
+.pr-type-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 5px;
+}
+.pr-type-badge.press { background: var(--blush); color: var(--lava); }
+.pr-type-badge.report { background: var(--dew); color: var(--vine); }
+
+/* Press release accent overrides */
+.report-card.is-press .publisher { color: var(--lava); }
+.report-card.is-press .report-audience { border-left-color: var(--lava); }
+.report-card.is-press .download-btn { background: var(--lava); color: var(--white); }
+.report-card.is-press .download-btn:hover { background: #ff5050; }
+.report-card.is-press .report-stats li::before { background: var(--lava); opacity: 0.9; }
 .report-card:hover {
   transform: translateY(-3px);
   border-color: var(--border-strong);
