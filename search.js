@@ -89,8 +89,9 @@ function searchAll(query, typeFilter = "all") {
   // Reviews
   if ((typeFilter === "all" || typeFilter === "review") && typeof reviews !== "undefined") {
     reviews.forEach((r, i) => {
-      if (r.exclude) return; // hide tenant/vendor complaints
-      const hay = [r.name, r.company, r.text, r.territory, r.source, ...(r.tags || [])].join(" ").toLowerCase();
+      if (r.exclude) return;          // hide tenant/vendor complaints
+      if (r.stars <= 1) return;       // hide 1-star reviews
+      const hay = [r.name, r.company, r.text, r.body, r.territory, r.source, ...(r.tags || [])].join(" ").toLowerCase();
       if (hay.includes(q)) {
         const source = r.source === 'g2' ? 'G2' : r.source === 'capterra' ? 'Capterra' : 'Google';
         const ter = r.territory && !/^(unknown|n\/?a)$/i.test(r.territory) ? r.territory : "";
@@ -98,7 +99,7 @@ function searchAll(query, typeFilter = "all") {
           type: "review", typeLabel: source + " review", item: r,
           title: r.name + (r.company && !/^(unknown|n\/?a)$/i.test(r.company) ? " · " + r.company : ""),
           subtitle: `${"★".repeat(r.stars)} · ${fmtDate(r.date)}${ter ? " · " + ter : ""}`,
-          snippet: r.text || "(no review text)",
+          snippet: r.body || r.text || "(no review text)",
           url: r.hsId ? hsUrl(r.hsId) : null,
           targetPage: "reviews.html"
         });

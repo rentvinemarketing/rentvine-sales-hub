@@ -39,7 +39,6 @@
           <span class="chip star-chip" data-value="4"><span class="star-icon">★</span>4</span>
           <span class="chip star-chip" data-value="3"><span class="star-icon">★</span>3</span>
           <span class="chip star-chip" data-value="2"><span class="star-icon">★</span>2</span>
-          <span class="chip star-chip" data-value="1"><span class="star-icon">★</span>1</span>
         </div>
       </div>
       <div class="filter-group">
@@ -92,6 +91,7 @@
     const now = Date.now();
     return reviews.filter(r => {
       if (r.exclude) return false;                                        // hide tenant/vendor complaints
+      if (r.stars <= 1) return false;                                     // hide 1-star reviews entirely
       if (rState.source !== "all" && r.source !== rState.source) return false;
       if (rState.stars.size && !rState.stars.has(String(r.stars))) return false;
       if (rState.tags.size && ![...rState.tags].some(t => r.tags.includes(t))) return false;
@@ -130,7 +130,18 @@
       const linkable = !!r.hsId;
       const hrefAttr = linkable ? `href="${hsUrl(r.hsId)}" target="_blank" rel="noopener"` : "";
       const tag = linkable ? "a" : "div";
-      const text = r.text ? `"${r.text}"` : '<span style="opacity:0.5;">(star rating only, no review text)</span>';
+      // G2 reviews: show the title above the body. Otherwise show whichever is present.
+      const hasBody = !!r.body;
+      const hasTitle = !!r.text;
+      let textHtml = '';
+      if (hasBody) {
+        textHtml = (hasTitle ? `<div class="review-title">${r.text}</div>` : '') +
+                   `<div class="review-text">"${r.body}"</div>`;
+      } else if (hasTitle) {
+        textHtml = `<div class="review-text">"${r.text}"</div>`;
+      } else {
+        textHtml = '<div class="review-text"><span style="opacity:0.5;">(star rating only, no review text)</span></div>';
+      }
       return `
       <${tag} class="review-card ${linkable ? '' : 'no-link'}" ${hrefAttr}>
         <div class="review-head">
@@ -140,7 +151,7 @@
           </div>
           <span class="source-badge ${r.source}">${r.source === 'g2' ? 'G2' : r.source === 'capterra' ? 'Capterra' : 'Google'}</span>
         </div>
-        <div class="review-text">${text}</div>
+        ${textHtml}
         <div class="review-tags">${r.tags.map(t => `<span class="review-tag">${t.replace(/-/g,' ')}</span>`).join("")}</div>
         <div class="reviewer">
           <div class="avatar">${initials(r.name)}</div>

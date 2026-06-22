@@ -745,6 +745,15 @@ code { background: var(--bg-elevated-2); padding: 1px 6px; border-radius: 4px; c
 .source-badge.g2 { background: var(--blush); color: var(--lava); }
 .source-badge.google { background: var(--sky); color: var(--blue); }
 .source-badge.capterra { background: var(--sand); color: var(--honey); }
+.review-card .review-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  margin-bottom: -2px;
+}
 .review-card .review-text {
   color: var(--text-secondary);
   font-size: 14px;

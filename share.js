@@ -45,7 +45,8 @@ Thanks,
     const source = r.source === 'g2' ? 'G2' : r.source === 'capterra' ? 'Capterra' : 'Google';
     const co = r.company && !/^(unknown|n\/?a)$/i.test(r.company) ? `, ${r.company}` : "";
     const ter = r.territory && !/^(unknown|n\/?a)$/i.test(r.territory) ? ` (${r.territory})` : "";
-    const text = r.text || "(see full review on the source)";
+    // Prefer the longer body (G2 review highlight) over the title.
+    const text = r.body || r.text || "(see full review on the source)";
     return `Hi [first name],
 
 Came across this ${source} review and thought it might be helpful for you and your team:

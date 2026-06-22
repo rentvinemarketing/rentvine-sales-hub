@@ -351,7 +351,8 @@ ${sign}
         }
         if (t === "share-review") {
           const co2 = it.company && !/^(unknown|n\/?a)$/i.test(it.company) ? `, ${it.company}` : "";
-          return `· Review: "${(it.text || "(5-star review)").slice(0, 140)}", ${it.name}${co2}`;
+          const txt = it.body || it.text || "(5-star review)";
+          return `· Review: "${txt.slice(0, 140)}", ${it.name}${co2}`;
         }
         if (t === "share-feature") return `· Feature: ${it.name}. ${it.url}`;
         if (t === "share-report")  return `· Report: ${it.title}. ${it.url}`;
@@ -388,8 +389,9 @@ ${sign}
         } else if (type === "share-review") {
           const source = it.source === 'g2' ? 'G2' : it.source === 'capterra' ? 'Capterra' : 'Google';
           const co2 = it.company && !/^(unknown|n\/?a)$/i.test(it.company) ? `, ${it.company}` : "";
+          const txt = it.body || it.text || "";  // prefer the longer body
           if (channel === "linkedin") {
-            body = `${greet} ${name}, came across this ${source} review and thought it might be helpful for you and your team:\n\n"${it.text || ""}"\n${it.name}${co2}`;
+            body = `${greet} ${name}, came across this ${source} review and thought it might be helpful for you and your team:\n\n"${txt}"\n${it.name}${co2}`;
           } else {
             subject = `A real review from a property manager`;
             body =
@@ -397,7 +399,7 @@ ${sign}
 
 Came across this ${source} review and thought it might be helpful for you and your team:
 
-"${it.text || ""}"
+"${txt}"
 ${it.name}${co2}
 
 ${sign}

@@ -125,7 +125,7 @@
     if (!grid) return;
 
     const latestFeature = [...features].sort((a, b) => new Date(b.released || 0) - new Date(a.released || 0))[0];
-    const latestReview  = [...reviews].filter(r => !r.exclude).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
+    const latestReview  = [...reviews].filter(r => !r.exclude && r.stars > 1).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
     const latestWebinar = [...webinars].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))[0];
 
     const cards = [];
@@ -145,7 +145,8 @@
     if (latestReview) {
       const co = latestReview.company && !/^(unknown|n\/?a)$/i.test(latestReview.company) ? latestReview.company : "Property manager";
       const source = latestReview.source === 'g2' ? 'G2' : latestReview.source === 'capterra' ? 'Capterra' : 'Google';
-      const text = latestReview.text ? `"${latestReview.text.length > 140 ? latestReview.text.slice(0, 140) + "…" : latestReview.text}"` : "";
+      const reviewBody = latestReview.body || latestReview.text;  // prefer longer body
+      const text = reviewBody ? `"${reviewBody.length > 140 ? reviewBody.slice(0, 140) + "…" : reviewBody}"` : "";
       cards.push(`
         <a class="recent-card review" href="reviews.html">
           <div class="recent-type">new ${source} review</div>
