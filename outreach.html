@@ -354,7 +354,12 @@ ${sign}
           const txt = it.body || it.text || "(5-star review)";
           return `· Review: "${txt.slice(0, 140)}", ${it.name}${co2}`;
         }
-        if (t === "share-feature") return `· Feature: ${it.name}. ${it.url}`;
+        if (t === "share-feature") {
+          // First benefit if available, otherwise first sentence of description
+          const valueProp = (it.benefits && it.benefits.length) ? it.benefits[0]
+            : (it.outreachAngle || it.desc || "").split(".")[0] + ".";
+          return `· ${it.name}: ${valueProp} ${it.url}`;
+        }
         if (t === "share-report")  return `· Report: ${it.title}. ${it.url}`;
         if (t === "share-webinar") return `· Webinar: ${it.title} (${it.partner}). ${it.url}`;
         return "";
@@ -370,16 +375,22 @@ ${sign}
         if (type === "share-case") {
           const switchedFrom = { appfolio: "moved off AppFolio", propertyware: "made the switch from Propertyware", legacy: "swapped out their old software" }[it.switched] || "switched to Rentvine";
           const pdfLine = it.pdfUrl ? `\nPDF version: ${it.pdfUrl}` : "";
+          const hook = it.outreachHook || `${it.customer} ${switchedFrom} and shared what changed.`;
+          const outcomes = it.keyOutcomes && it.keyOutcomes.length
+            ? "\n\nWhat changed:\n" + it.keyOutcomes.slice(0, 3).map(o => "· " + o).join("\n")
+            : "";
           if (channel === "linkedin") {
-            // LinkedIn keeps it short. Use PDF link if available (more shareable than blog).
             const link = it.pdfUrl || it.url;
-            body = `${greet} ${name}, ${pain ? "thinking about " + pain + ", " : ""}this case study might land. ${it.customer} ${switchedFrom} and shared what changed. ${link}`;
+            const linkedinHook = hook.split(".").slice(0, 2).join(".");
+            body = `${greet} ${name}, ${pain ? "thinking about " + pain + ", " : ""}thought this might land. ${linkedinHook}. ${link}`;
           } else {
             subject = `Thought you'd want to see this. ${it.customer}`;
             body =
 `${greet} ${name},
 
-This case study might be helpful as we continue our conversation. ${it.customer} ${switchedFrom} and shared what changed${pain ? ", especially around " + pain : ""}.
+This case study might be helpful as we continue our conversation${pain ? ", especially around " + pain : ""}.
+
+${hook}${outcomes}
 
 ${it.url}${pdfLine}
 
@@ -406,37 +417,59 @@ ${sign}
 [your name]`;
           }
         } else if (type === "share-feature") {
+          const angle = it.outreachAngle || it.desc;
+          const benefitsBlock = it.benefits && it.benefits.length
+            ? "\n\nWhat stands out:\n" + it.benefits.slice(0, 4).map(b => "· " + b).join("\n")
+            : "";
+          const descBlock = (it.outreachAngle && it.desc && it.desc !== it.outreachAngle)
+            ? `\n\nWhere it lives in the product:\n${it.desc}`
+            : "";
+          const videoLine = it.video && it.video.url ? `\n\nWatch a 60-90 second walkthrough: ${it.video.url}` : "";
+          const imageLine = it.image && it.image.url ? `\nScreenshot for context: ${it.image.url}` : "";
+          const painOpener = pain ? `Heard you mention ${pain}. ${it.name} is what I'd point at first.\n\n` : "";
+          const closingCTA = channel === "linkedin"
+            ? ""
+            : `\n\nIf it lands, I can show it live in about 10 minutes.\n\n${sign}\n[your name]`;
+
           if (channel === "linkedin") {
-            body = `${greet} ${name}, quick share. Rentvine's ${it.name}. ${it.desc.split(".")[0]}. ${it.url}`;
+            // LinkedIn — still tight, but with one or two highlights instead of just a one-liner
+            const topBenefit = it.benefits && it.benefits.length ? `\n\n${it.benefits[0]}` : "";
+            const secondBenefit = it.benefits && it.benefits.length > 1 ? `\n${it.benefits[1]}` : "";
+            body = `${greet} ${name}, ${pain ? "thinking about " + pain + " — " : ""}quick share on Rentvine's ${it.name}. ${angle.split(".").slice(0,2).join(".")}.${topBenefit}${secondBenefit}\n\n${it.url}`;
           } else {
-            subject = `Quick share. Rentvine's ${it.name}`;
+            subject = `${it.name}, and why it might land for ${co}`;
             body =
 `${greet} ${name},
 
-Thought this might be helpful for you and your team. Quick look at Rentvine's ${it.name}.
+${painOpener}${angle}${benefitsBlock}${descBlock}
 
-${it.desc}
-
-${it.url}
-
-${sign}
-[your name]`;
+${videoLine ? videoLine + "\n" : ""}${imageLine}${videoLine || imageLine ? "\n" : ""}
+Full feature page: ${it.url}${closingCTA}`;
           }
         } else if (type === "share-report") {
+          const isPress = it.type === "press";
           const body2 = it.snippet || `Sharing ${it.title}.`;
+          const statsBlock = it.stats && it.stats.length
+            ? "\n\n" + (isPress ? "Highlights:" : "A few highlights worth your time:") + "\n" + it.stats.slice(0, 3).map(s => "· " + s).join("\n")
+            : "";
+          const bestFor = it.audience ? `\n\nBest for: ${it.audience}` : "";
+          const readingNote = isPress ? "Quick read." : "Worth a 10-minute skim.";
           if (channel === "linkedin") {
             body = `${greet} ${name}, ${body2} ${it.url}`;
           } else {
             subject = it.title;
-            body = `${greet} ${name},\n\n${body2}\n\n${it.url}\n\n${sign}\n[your name]`;
+            body = `${greet} ${name},\n\n${body2}${statsBlock}${bestFor}\n\n${it.url}\n\n${readingNote}\n\n${sign}\n[your name]`;
           }
         } else if (type === "share-webinar") {
-          const body2 = it.snippet || `Sharing a recent webinar with ${it.partner}: ${it.title}.`;
+          const lead = it.outreachAngle || it.snippet || `Sharing a recent webinar with ${it.partner}: ${it.title}.`;
+          const takeaways = it.takeaways && it.takeaways.length
+            ? "\n\nKey takeaways from the recording:\n" + it.takeaways.slice(0, 4).map(t => "· " + t).join("\n")
+            : "";
           if (channel === "linkedin") {
-            body = `${greet} ${name}, ${body2} ${it.url}`;
+            body = `${greet} ${name}, ${lead.split(".").slice(0,2).join(".")}. ${it.url}`;
           } else {
             subject = `Webinar: ${it.title}`;
-            body = `${greet} ${name},\n\n${body2}\n\n${it.url}\n\n${sign}\n[your name]`;
+            body = `${greet} ${name},\n\n${lead}${takeaways}\n\n${it.url}\n\n${sign}\n[your name]`;
           }
         }
       }

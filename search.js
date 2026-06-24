@@ -281,6 +281,8 @@ document.addEventListener("keydown", e => {
 
 /* -------- Auto-inject hero search bar on every page -------- */
 function injectHeroSearch() {
+  // Skip the home page — it has its own "Present your problem" UI.
+  if (document.body.dataset.page === "home") return;
   // Skip if page already has the inline hero search (no double-render)
   if (document.getElementById("heroSearchBtn")) {
     document.getElementById("heroSearchBtn").addEventListener("click", openSearch);

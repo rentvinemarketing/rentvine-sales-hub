@@ -21,10 +21,16 @@ const SNIPPET = {
       propertyware: "made the switch from Propertyware",
       legacy: "swapped out their old software"
     }[c.switched] || "switched to Rentvine";
-    const pdfLine = c.pdfUrl ? `\nPDF: ${c.pdfUrl}` : "";
+    const pdfLine = c.pdfUrl ? `\nPDF version: ${c.pdfUrl}` : "";
+    const hook = c.outreachHook || `${c.customer} ${switchedFrom} and shared what changed.`;
+    const outcomes = c.keyOutcomes && c.keyOutcomes.length
+      ? "\n\nWhat changed:\n" + c.keyOutcomes.slice(0, 3).map(o => "· " + o).join("\n")
+      : "";
     return `Hi [first name],
 
-This case study might be helpful as we continue our conversation. ${c.customer} ${switchedFrom} and shared what changed.
+This case study might be helpful as we continue our conversation.
+
+${hook}${outcomes}
 
 ${c.url}${pdfLine}
 
@@ -32,14 +38,30 @@ Thanks,
 [your name]`;
   },
 
-  feature: (f) => `Hi [first name],
+  feature: (f) => {
+    const angle = f.outreachAngle || f.desc;
+    const benefitsBlock = f.benefits && f.benefits.length
+      ? "\n\nWhat stands out:\n" + f.benefits.slice(0, 4).map(b => "· " + b).join("\n")
+      : "";
+    const descBlock = (f.outreachAngle && f.desc && f.desc !== f.outreachAngle)
+      ? `\n\nWhere it lives in the product:\n${f.desc}`
+      : "";
+    const videoLine = f.video && f.video.url ? `\nWatch a 60-90 second walkthrough: ${f.video.url}` : "";
+    const imageLine = f.image && f.image.url ? `\nScreenshot for context: ${f.image.url}` : "";
+    const media = (videoLine || imageLine) ? "\n" + videoLine + imageLine : "";
+    return `Hi [first name],
 
-Thought this might be helpful for you and your team. Quick look at Rentvine's ${f.name}.
+Thought this might be helpful for you and your team.
 
-${f.url}
+${angle}${benefitsBlock}${descBlock}${media}
+
+Full feature page: ${f.url}
+
+If it lands, I can show it live in about 10 minutes.
 
 Thanks,
-[your name]`,
+[your name]`;
+  },
 
   review: (r) => {
     const source = r.source === 'g2' ? 'G2' : r.source === 'capterra' ? 'Capterra' : 'Google';
@@ -60,21 +82,32 @@ Thanks,
 
   report: (rep) => {
     const body = rep.snippet || `Sharing ${rep.title}.`;
+    const isPress = rep.type === "press";
+    const statsBlock = rep.stats && rep.stats.length
+      ? "\n\n" + (isPress ? "Highlights:" : "A few highlights worth your time:") + "\n" + rep.stats.slice(0, 3).map(s => "· " + s).join("\n")
+      : "";
+    const bestFor = rep.audience ? `\n\nBest for: ${rep.audience}` : "";
+    const readingTime = isPress ? "Quick read." : "Worth a 10-minute skim before our next chat.";
     return `Hi [first name],
 
-${body}
+${body}${statsBlock}${bestFor}
 
 ${rep.url}
+
+${readingTime}
 
 Thanks,
 [your name]`;
   },
 
   webinar: (w) => {
-    const body = w.snippet || `Sharing a recent webinar with ${w.partner}: ${w.title}.`;
+    const lead = w.outreachAngle || w.snippet || `Sharing a recent webinar with ${w.partner}: ${w.title}.`;
+    const takeaways = w.takeaways && w.takeaways.length
+      ? "\n\nKey takeaways from the recording:\n" + w.takeaways.slice(0, 4).map(t => "· " + t).join("\n")
+      : "";
     return `Hi [first name],
 
-${body}
+${lead}${takeaways}
 
 ${w.url}
 

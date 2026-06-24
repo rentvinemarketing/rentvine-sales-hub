@@ -120,6 +120,9 @@
     grid.innerHTML = filtered.map((f, idx) => {
       const releaseDate = f.released ? fmtDate(f.released) : "";
       const newBadge = isNew(f) ? '<span class="new-badge">NEW</span>' : '';
+      const benefitsHtml = f.benefits && f.benefits.length
+        ? `<ul class="feature-benefits">${f.benefits.map(b => `<li>${b}</li>`).join("")}</ul>`
+        : '';
       return `
       <div class="feature-card">
         <div class="feature-head">
@@ -130,15 +133,74 @@
         <h3>${f.name}</h3>
         ${releaseDate ? `<div class="release-date">released ${releaseDate}</div>` : ''}
         <div class="feature-desc">${f.desc}</div>
+        ${benefitsHtml}
         <a class="feature-link" href="${f.url}" target="_blank" rel="noopener">view page </a>
         <div class="collateral-row">
-          ${collateralSlot("video", f.video)}
+          ${collateralSlotEnhanced("video", f.video)}
           ${collateralSlot("image", f.image)}
           ${collateralSlot("one-pager", f.onePager)}
         </div>
       </div>`;
     }).join("");
   }
+
+  // Video slots get a popup player instead of just opening YouTube
+  function collateralSlotEnhanced(type, asset) {
+    const ico = ICONS.video;
+    const isEmpty = !asset || !asset.url;
+    if (isEmpty) {
+      return `<div class="collateral-slot empty">
+        <span class="ico">${ico}</span>
+        <span class="label-stack">
+          <span class="type">${type}</span>
+          <span>add link</span>
+        </span>
+      </div>`;
+    }
+    return `<button type="button" class="collateral-slot video-pop" data-video-url="${asset.url}" title="Click to watch">
+      <span class="ico">${ico}</span>
+      <span class="label-stack">
+        <span class="type">${type}</span>
+        <span>${asset.label || 'watch'}</span>
+      </span>
+    </button>`;
+  }
+
+  // Video modal
+  function ensureVideoModal() {
+    if (document.getElementById("videoModal")) return;
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="video-modal" id="videoModal" hidden>
+        <div class="video-modal-bg" id="videoModalBg"></div>
+        <div class="video-modal-content">
+          <button class="video-modal-close" id="videoModalClose">×</button>
+          <div class="video-modal-frame" id="videoModalFrame"></div>
+        </div>
+      </div>
+    `);
+    document.getElementById("videoModalBg").addEventListener("click", closeVideoModal);
+    document.getElementById("videoModalClose").addEventListener("click", closeVideoModal);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeVideoModal(); });
+  }
+  function openVideoModal(url) {
+    ensureVideoModal();
+    // Extract YouTube video ID from common URL formats
+    const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([^?&\/]+)/);
+    const id = m ? m[1] : null;
+    const embedSrc = id ? `https://www.youtube.com/embed/${id}?autoplay=1&rel=0` : url;
+    document.getElementById("videoModalFrame").innerHTML = `<iframe src="${embedSrc}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    document.getElementById("videoModal").hidden = false;
+  }
+  function closeVideoModal() {
+    const m = document.getElementById("videoModal");
+    if (m) { m.hidden = true; document.getElementById("videoModalFrame").innerHTML = ""; }
+  }
+  document.addEventListener("click", e => {
+    const btn = e.target.closest(".video-pop");
+    if (!btn) return;
+    e.preventDefault();
+    openVideoModal(btn.dataset.videoUrl);
+  });
 
   document.getElementById("featSearch").addEventListener("input", e => { fState.search = e.target.value; renderFeatures(); });
 

@@ -11,8 +11,24 @@
 <section class="hero">
   <div class="hero-inner">
     <span class="eyebrow">sales enablement</span>
-    <h1>Everything you need to close.</h1>
-    <p class="lead">Your hub for the sales deck, customer stories, reviews, webinars, and the full Rentvine feature library. All in one place.</p>
+    <h1>Present your problem.</h1>
+    <p class="lead">Describe what you're trying to solve, what your prospect cares about, or what's stuck in your deal. The hub will recommend the best case studies, reviews, features, and PR to share.</p>
+    <form class="rcmd-form" id="rcmdForm">
+      <div class="rcmd-input-row">
+        <svg class="rcmd-sparkle" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l1.6 5.5 5.5 1.6-5.5 1.6L12 16.7l-1.6-5.5L4.9 9.6l5.5-1.6L12 2.5z"/><path d="M18.5 13.5l.85 2.4 2.4.85-2.4.85-.85 2.4-.85-2.4-2.4-.85 2.4-.85.85-2.4z"/></svg>
+        <textarea id="rcmdInput" placeholder="e.g. My prospect is leaving AppFolio and worried about losing their reconciliation history. They have 600 doors." rows="2"></textarea>
+        <button type="submit" class="rcmd-submit">recommend</button>
+      </div>
+      <div class="rcmd-suggests">
+        <span class="rcmd-suggests-label">try:</span>
+        <button type="button" class="rcmd-suggest" data-q="My prospect is switching from AppFolio and is worried about portfolio accounting.">switching from AppFolio</button>
+        <button type="button" class="rcmd-suggest" data-q="Owner is asking for better statements and faster payouts.">better owner statements</button>
+        <button type="button" class="rcmd-suggest" data-q="Prospect wants to know if Rentvine has AI for maintenance.">AI for maintenance</button>
+        <button type="button" class="rcmd-suggest" data-q="They're comparing Rentvine to Propertyware and Buildium.">competitive comparison</button>
+      </div>
+    </form>
+    <div class="rcmd-results" id="rcmdResults" hidden></div>
+    <p class="hero-search-hint">Or press <kbd>⌘ K</kbd> for keyword search across the hub.</p>
   </div>
 </section>
 
@@ -118,6 +134,7 @@
 <script src="nav.js"></script>
 <script src="share.js"></script>
 <script src="search.js"></script>
+<script src="recommender.js"></script>
 <script>
   /* ---- Recent updates: pull newest feature, review, webinar ---- */
   function renderRecent() {
