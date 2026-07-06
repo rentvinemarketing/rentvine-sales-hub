@@ -342,26 +342,46 @@ ${sign}
         return { subject, body };
       }
 
-      // Helpers — bullet line per type
+      // Helpers — bullet block per type. Each carries the same context
+      // (hook/outcomes/benefits/stats/takeaways) as the single-item drafts
+      // and the per-card "draft" buttons on the other pages, just condensed.
       function renderBullet(t, it) {
         if (t === "share-case") {
           const sf = { appfolio: "switched from AppFolio", propertyware: "switched from Propertyware", legacy: "swapped out legacy software" }[it.switched] || "switched to Rentvine";
           const link = it.pdfUrl || it.url;
-          return `· Case study: ${it.customer} (${sf}). ${link}`;
+          const hook = it.outreachHook || `${it.customer} ${sf} and shared what changed.`;
+          const outcomeLines = it.keyOutcomes && it.keyOutcomes.length
+            ? "\n  " + it.keyOutcomes.slice(0, 2).map(o => "- " + o).join("\n  ")
+            : "";
+          return `· Case study: ${it.customer} (${sf})\n  ${hook}${outcomeLines}\n  ${link}`;
         }
         if (t === "share-review") {
+          const source = it.source === 'g2' ? 'G2' : it.source === 'capterra' ? 'Capterra' : 'Google';
           const co2 = it.company && !/^(unknown|n\/?a)$/i.test(it.company) ? `, ${it.company}` : "";
           const txt = it.body || it.text || "(5-star review)";
-          return `· Review: "${txt.slice(0, 140)}", ${it.name}${co2}`;
+          return `· Review (${source}): "${txt}"\n  ${it.name}${co2}`;
         }
         if (t === "share-feature") {
-          // First benefit if available, otherwise first sentence of description
-          const valueProp = (it.benefits && it.benefits.length) ? it.benefits[0]
-            : (it.outreachAngle || it.desc || "").split(".")[0] + ".";
-          return `· ${it.name}: ${valueProp} ${it.url}`;
+          const angle = it.outreachAngle || it.desc || "";
+          const benefitLines = it.benefits && it.benefits.length
+            ? "\n  " + it.benefits.slice(0, 2).map(b => "- " + b).join("\n  ")
+            : "";
+          return `· ${it.name}: ${angle}${benefitLines}\n  ${it.url}`;
         }
-        if (t === "share-report")  return `· Report: ${it.title}. ${it.url}`;
-        if (t === "share-webinar") return `· Webinar: ${it.title} (${it.partner}). ${it.url}`;
+        if (t === "share-report") {
+          const lead = it.snippet || `Sharing ${it.title}.`;
+          const statLines = it.stats && it.stats.length
+            ? "\n  " + it.stats.slice(0, 2).map(s => "- " + s).join("\n  ")
+            : "";
+          return `· Report: ${it.title}\n  ${lead}${statLines}\n  ${it.url}`;
+        }
+        if (t === "share-webinar") {
+          const lead = it.outreachAngle || it.snippet || `Sharing a recent webinar with ${it.partner}: ${it.title}.`;
+          const takeawayLines = it.takeaways && it.takeaways.length
+            ? "\n  " + it.takeaways.slice(0, 2).map(x => "- " + x).join("\n  ")
+            : "";
+          return `· Webinar: ${it.title} (${it.partner})\n  ${lead}${takeawayLines}\n  ${it.url}`;
+        }
         return "";
       }
 
@@ -500,7 +520,7 @@ Full feature page: ${it.url}${closingCTA}`;
           subj  = `A few things worth your time`;
         }
 
-        const bullets = selected.map(({ type, item }) => renderBullet(type, item)).join("\n");
+        const bullets = selected.map(({ type, item }) => renderBullet(type, item)).join("\n\n");
 
         if (channel === "linkedin") {
           // Keep it tight on LinkedIn. Intro + bullets, no signoff
