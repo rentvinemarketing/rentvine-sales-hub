@@ -59,7 +59,7 @@ function renderFooter() {
   document.body.insertAdjacentHTML("beforeend", `
     <footer class="site-footer">
       <div class="footer-simple">
-        <p>This page is constantly being iterated. For suggestions or questions, message <a href="mailto:amy@rentvine.com">Amy Lostutter</a>.</p>
+        <p>This page is constantly being iterated. For suggestions or questions, message <a href="mailto:apolonia.bross@rentvine.com">Apol Bross</a>.</p>
       </div>
     </footer>
   `);
