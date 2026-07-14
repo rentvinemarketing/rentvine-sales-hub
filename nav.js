@@ -49,6 +49,7 @@ function renderHeader() {
         </nav>
         <div class="header-cta">
           <a class="btn btn-secondary" href="${SALES_DECK_URL}" target="_blank" rel="noopener">sales deck</a>
+          <a class="btn btn-secondary" href="competitors.html">pros & cons</a>
         </div>
       </div>
     </header>
