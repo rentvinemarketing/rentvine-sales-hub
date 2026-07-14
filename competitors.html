@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Competitor pros and cons · Rentvine sales hub</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Scoped to this page only, mirrors competitor-hub's pros/cons layout
+     using the shared brand CSS variables already defined in style.css. */
+  .comp-card {
+    background: var(--bg-elevated);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .comp-card.is-us {
+    border-color: rgba(26,191,106,0.35);
+    background: var(--bg-elevated-2);
+  }
+  .comp-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .comp-head h3 {
+    font-size: 22px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .us-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--vine);
+    background: var(--dew);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .pc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 720px) { .pc-grid { grid-template-columns: 1fr; } }
+  .pc-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .pc-box.pros { border-top: 2px solid var(--vine); }
+  .pc-box.cons { border-top: 2px solid var(--honey); }
+  .pc-head {
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    text-transform: lowercase;
+  }
+  .pc-head.pros { color: var(--vine); }
+  .pc-head.cons { color: var(--honey); }
+  .pc-item {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.5;
+  }
+  .pc-item:last-child { border-bottom: none; }
+  .opp-box {
+    background: var(--bg-elevated-2);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--vine);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .opp-box strong { color: var(--text); }
+  .adv-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .adv-chip {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--vine);
+    background: var(--dew);
+    padding: 5px 12px;
+    border-radius: 999px;
+  }
+  .refresh-note {
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    margin-top: -6px;
+    margin-bottom: 28px;
+  }
+</style>
+</head>
+<body data-page="competitors">
+
+<section class="hero hero-sub">
+  <div class="hero-inner">
+    <span class="eyebrow">know the competition</span>
+    <h1>Pros and cons, by competitor.</h1>
+    <p class="lead">How rentvine stacks up against AppFolio, Buildium, DoorLoop, Entrata, and Yardi Breeze, plus rentvine's own strengths and gaps.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <p class="refresh-note">Pulled from the team's competitive analysis. Updated monthly, so check back for the latest.</p>
+  <div id="compList"></div>
+</section>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="share.js"></script>
+<script src="search.js"></script>
+<script>
+  function renderCompetitors() {
+    const wrap = document.getElementById("compList");
+    wrap.innerHTML = competitorAnalysis.map(c => {
+      const advRow = c.advantages ? `
+        <div class="adv-row">
+          ${c.advantages.map(a => `<span class="adv-chip">${a}</span>`).join("")}
+        </div>` : "";
+      return `
+        <div class="comp-card ${c.isUs ? "is-us" : ""}">
+          <div class="comp-head">
+            <h3>${c.name}</h3>
+            ${c.isUs ? '<span class="us-badge">us</span>' : ""}
+          </div>
+          <div class="pc-grid">
+            <div class="pc-box pros">
+              <div class="pc-head pros">pros</div>
+              ${c.pros.map(p => `<div class="pc-item">${p}</div>`).join("")}
+            </div>
+            <div class="pc-box cons">
+              <div class="pc-head cons">cons</div>
+              ${c.cons.map(p => `<div class="pc-item">${p}</div>`).join("")}
+            </div>
+          </div>
+          <div class="opp-box"><strong>Where this helps you:</strong> ${c.opportunity}</div>
+          ${advRow}
+        </div>
+      `;
+    }).join("");
+  }
+  renderCompetitors();
+</script>
+
+</body>
+</html>
