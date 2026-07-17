@@ -113,6 +113,19 @@ ${w.url}
 
 Thanks,
 [your name]`;
+  },
+
+  competitorNews: (n) => {
+    const link = n.url || "";
+    const linkLine = link ? `\n${link}` : "";
+    return `Hi [first name],
+
+Thought you'd want to see this. ${n.summary}
+
+${n.title}${linkLine}
+
+Thanks,
+[your name]`;
   }
 };
 
@@ -174,7 +187,8 @@ function openShare(type, item) {
     feature: ["feature", "Share this feature"],
     review: ["review", "Share this review"],
     report: ["report", "Share this report"],
-    webinar: ["webinar", "Share this webinar"]
+    webinar: ["webinar", "Share this webinar"],
+    competitorNews: ["competitor news", "Share this update"]
   };
   const [eyebrow, title] = titleMap[type];
   document.getElementById("shareEyebrow").textContent = eyebrow;

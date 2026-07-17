@@ -105,6 +105,38 @@
     margin-top: -6px;
     margin-bottom: 28px;
   }
+  .comp-news-box {
+    border-top: 1px solid var(--border);
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+  .comp-news-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: lowercase;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+  .comp-news-item {
+    display: block;
+    font-size: 13px;
+    color: var(--vine);
+    text-decoration: none;
+    padding: 3px 0;
+  }
+  .comp-news-item:hover { text-decoration: underline; }
+  .comp-news-viewall {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+  }
+  .comp-news-viewall:hover { color: var(--text-secondary); }
 </style>
 </head>
 <body data-page="competitors">
@@ -129,13 +161,29 @@
 <script>
   function renderCompetitors() {
     const wrap = document.getElementById("compList");
+    const news = typeof competitorNews !== "undefined" ? competitorNews : [];
+
     wrap.innerHTML = competitorAnalysis.map(c => {
       const advRow = c.advantages ? `
         <div class="adv-row">
           ${c.advantages.map(a => `<span class="adv-chip">${a}</span>`).join("")}
         </div>` : "";
+
+      const matchingNews = news
+        .filter(n => n.competitorId === c.id)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+      const newsBox = matchingNews.length ? `
+        <div class="comp-news-box">
+          <div class="comp-news-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a2 2 0 002 2h1l4 4V5L6 9H5a2 2 0 00-2 2z"/><path d="M15 8a4 4 0 010 8"/></svg>
+            recent news (${matchingNews.length})
+          </div>
+          ${matchingNews.slice(0, 3).map(n => `<a class="comp-news-item" href="competitor-news.html">${n.title} &rarr;</a>`).join("")}
+          ${matchingNews.length > 3 ? `<a class="comp-news-viewall" href="competitor-news.html">view all competitor news &rarr;</a>` : ""}
+        </div>` : "";
+
       return `
-        <div class="comp-card ${c.isUs ? "is-us" : ""}">
+        <div class="comp-card ${c.isUs ? "is-us" : ""}" id="comp-${c.id}">
           <div class="comp-head">
             <h3>${c.name}</h3>
             ${c.isUs ? '<span class="us-badge">us</span>' : ""}
@@ -152,6 +200,7 @@
           </div>
           <div class="opp-box"><strong>Where this helps you:</strong> ${c.opportunity}</div>
           ${advRow}
+          ${newsBox}
         </div>
       `;
     }).join("");

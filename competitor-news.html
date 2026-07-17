@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Competitor news · Rentvine sales hub</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Scoped to this page only. Competitor-name pill reuses the same
+     visual language as .switched-badge but with its own neutral
+     palette, since it needs to represent any of six competitors
+     rather than three fixed switched-from sources. */
+  .cn-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--vine);
+    background: var(--dew);
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-decoration: none;
+  }
+  .cn-badge:hover { background: rgba(26,191,106,0.28); }
+  .cn-source {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+</style>
+</head>
+<body data-page="competitor-news">
+
+<section class="hero hero-sub">
+  <div class="hero-inner">
+    <span class="eyebrow">stay current · pulled from #growth-marketing-channel</span>
+    <h1>Competitor news.</h1>
+    <p class="lead">What's happening with AppFolio, Buildium, DoorLoop, Entrata, and Yardi Breeze right now. Auto-refreshed weekly, so check back for the latest.</p>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="results-meta">
+    <span><b id="newsCount">0</b> updates</span>
+    <span style="font-size:12px; color: var(--text-tertiary);">sorted newest first · auto-pulled weekly, same schedule as the review refresh</span>
+  </div>
+
+  <div class="cards" id="newsGrid"></div>
+</section>
+
+<script src="data.js"></script>
+<script src="nav.js"></script>
+<script src="share.js"></script>
+<script src="search.js"></script>
+<script>
+  function renderCompetitorNews() {
+    const sorted = [...competitorNews].sort((a, b) => new Date(b.date) - new Date(a.date));
+    setShareItems('competitorNews', sorted);
+    document.getElementById("newsCount").textContent = sorted.length;
+
+    if (sorted.length === 0) {
+      document.getElementById("newsGrid").innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <h3>No competitor news yet</h3>
+          <p>The weekly refresh pulls from #growth-marketing-channel every Monday. Check back soon.</p>
+        </div>`;
+      return;
+    }
+
+    document.getElementById("newsGrid").innerHTML = sorted.map((n, i) => `
+      <div class="case-card">
+        <a class="cn-badge" href="competitors.html#comp-${n.competitorId}">${n.competitor}</a>
+        <h3>${n.title}</h3>
+        <div class="quote">${n.summary}</div>
+        <div class="meta">
+          <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${fmtDate(n.date)}</span>
+          <span class="cn-source">${n.source || ''}</span>
+        </div>
+        ${n.tags && n.tags.length ? `<div class="tags">${n.tags.map(t => `<span class="tag">${t.replace(/-/g,' ')}</span>`).join("")}</div>` : ''}
+        <div class="card-footer-row">
+          ${n.url ? `<a class="read-link" href="${n.url}" target="_blank" rel="noopener">read more</a>` : `<a class="read-link" href="competitors.html#comp-${n.competitorId}">view battlecard</a>`}
+          ${shareBtnHtml('competitorNews', i)}
+        </div>
+      </div>
+    `).join("");
+  }
+  renderCompetitorNews();
+</script>
+
+</body>
+</html>
