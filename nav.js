@@ -36,6 +36,7 @@ const NAV_ITEMS = [
 
 function renderHeader() {
   const page = document.body.dataset.page || "home";
+  const current = NAV_ITEMS.find(n => n.id === page);
 
   document.body.insertAdjacentHTML("afterbegin", `
     <div class="internal-banner" role="note" aria-label="Internal use only">
@@ -44,12 +45,16 @@ function renderHeader() {
     </div>
     <header class="site-header">
       <div class="header-inner">
-        <a class="logo" href="index.html" aria-label="Rentvine sales hub">
-          <img src="rentvine-logo.png" alt="Rentvine" class="logo-img" />
-          <span class="sub-brand">sales hub</span>
-        </a>
+        <div class="header-left">
+          <a class="logo" href="index.html" aria-label="Rentvine sales hub">
+            <img src="rentvine-logo.png" alt="Rentvine" class="logo-img" />
+            <span class="sub-brand">sales hub</span>
+          </a>
+          ${current ? `<span class="nav-current-page">${NAV_ICONS[current.id] || ''}${current.label}</span>` : ''}
+        </div>
         <button class="nav-hamburger-btn" id="navHamburgerBtn" type="button" aria-expanded="false" aria-controls="navMenuPanel" aria-label="Open navigation menu">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <span>menu</span>
         </button>
       </div>
       <div class="nav-menu-panel" id="navMenuPanel" hidden>
