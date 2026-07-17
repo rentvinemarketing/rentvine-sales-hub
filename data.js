@@ -39,6 +39,7 @@ const caseStudies = [
     tags: ["migration","growth","api","onboarding","switching"],
     tagsLabel: ["migration","growth","open API","onboarding","switching"],
     url: "https://www.rentvine.com/blog/how-rosenbaum-realty-group-switched-scaled-and-acquired-all-at-once",
+    image: "https://www.rentvine.com/images/blog/Blog%20Template_1.png",
     highlight: ["growth","migration"]
   },
   {
@@ -52,6 +53,7 @@ const caseStudies = [
     tags: ["accounting","compliance","migration","support","switching"],
     tagsLabel: ["accounting","compliance","migration","customer support","switching"],
     url: "https://www.rentvine.com/blog/zero-violations-how-prandi-property-management-passed-a-ca-dre-audit-with-rentvine",
+    image: "https://www.rentvine.com/images/blog/prandi-case-study-video-cover.png",
     highlight: ["accounting","compliance"]
   },
   {
@@ -65,6 +67,7 @@ const caseStudies = [
     tags: ["switching","growth","accounting","maintenance","onboarding","support","migration"],
     tagsLabel: ["switching","growth","accounting","maintenance","onboarding","customer support","migration"],
     url: "https://www.rentvine.com/blog/the-right-time-to-switch--how-growth-forced-better-systems-for-sunlight-property-management-",
+    image: "https://www.rentvine.com/images/blog/Blog%20Template%20(2).png",
     highlight: ["growth","accounting"]
   },
   {
@@ -78,6 +81,7 @@ const caseStudies = [
     tags: ["switching","accounting","migration","onboarding","support","growth","data"],
     tagsLabel: ["switching","accounting","migration","onboarding","customer support","growth","trust accounting"],
     url: "https://www.rentvine.com/blog/sapir-realty-case-study",
+    image: "https://www.rentvine.com/images/blog/Sapir_Blog.png",
     pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22182824",
     highlight: ["switching","accounting"]
   },
@@ -92,6 +96,7 @@ const caseStudies = [
     tags: ["switching","api","onboarding","support","ai","data","migration"],
     tagsLabel: ["switching","open API","onboarding","customer support","AI","integrations","migration"],
     url: "https://www.rentvine.com/blog/performance-asset-management-embraces-the-future-of-property-management-with-rentvine",
+    image: "https://www.rentvine.com/images/blog/Blog%20highlight%20LI.jpg",
     pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22182821",
     highlight: ["api","ai"]
   },
@@ -106,6 +111,7 @@ const caseStudies = [
     tags: ["switching","migration","accounting","onboarding","support"],
     tagsLabel: ["switching","migration","accounting","onboarding","user adoption"],
     url: "https://www.rentvine.com/blog/prandi-property-management-transitioning-to-rentvine-for-a-more-efficient-property-management",
+    image: "https://img.youtube.com/vi/p8EV_WmNnkA/hqdefault.jpg",
     pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22182816",
     highlight: ["switching","migration"]
   },
@@ -120,6 +126,7 @@ const caseStudies = [
     tags: ["switching","support","onboarding","migration","data"],
     tagsLabel: ["switching","customer support","onboarding","migration","scalability"],
     url: "https://www.rentvine.com/blog/from-frustration-to-efficiency-how-rentvine-revolutionized-our-property-management-company",
+    image: "https://img.youtube.com/vi/fVAkfw3_kmM/hqdefault.jpg",
     pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22183058",
     highlight: ["support"]
   },
@@ -134,6 +141,7 @@ const caseStudies = [
     tags: ["support","api","switching"],
     tagsLabel: ["customer support","open API","tech stack"],
     url: "https://www.rentvine.com/blog/transforming-property-management-client-success-stories-with-renters-place",
+    image: "https://img.youtube.com/vi/dAsPdj3BGGw/hqdefault.jpg",
     pdfUrl: "https://app.hubspot.com/documents/9252921/preview/22183065",
     highlight: ["support","api"]
   },
@@ -148,6 +156,7 @@ const caseStudies = [
     tags: ["switching","support","api"],
     tagsLabel: ["switching","customer support","open API","tech stack"],
     url: "https://www.rentvine.com/blog/eaton-realtys-experience-with-rentvine",
+    image: "https://img.youtube.com/vi/JLmAmuEEjJ8/hqdefault.jpg",
     pdfUrl: "https://app.hubspot.com/documents/9252921/summary/22185810",
     highlight: ["api","support"]
   }

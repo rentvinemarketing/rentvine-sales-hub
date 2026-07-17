@@ -110,6 +110,7 @@
         <a class="case-card" href="${c.url}" target="_blank" rel="noopener">
           <span class="switched-badge ${c.switched}">${c.switchedLabel}</span>
           <h3>${c.customer}</h3>
+          ${c.image ? `<img class="case-card-image" src="${c.image}" alt="" loading="lazy" onerror="this.remove()">` : ''}
           <div class="quote">"${c.quote}"</div>
           <div class="meta">
             <span>${ICONS.role}${c.role}</span>

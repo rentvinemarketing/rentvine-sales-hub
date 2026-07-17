@@ -643,6 +643,14 @@ code { background: var(--bg-elevated-2); padding: 1px 6px; border-radius: 4px; c
   font-size: 19px; font-weight: 700; margin: 0;
   letter-spacing: -0.01em; line-height: 1.25;
 }
+.case-card-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: block;
+}
 .case-card .quote {
   color: var(--text-secondary);
   font-size: 14px;
