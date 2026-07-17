@@ -542,6 +542,24 @@ const competitorAnalysis = [
     advantages: ["enterprise accounting", "independent ownership", "scales to 1,000+ doors", "no RealPage concerns", "built-in reconciliation"]
   },
   {
+    id: "propertyware",
+    name: "Propertyware",
+    pros: [
+      "RealPage backing gives it enterprise level infrastructure and resources.",
+      "Purpose built for single family portfolios, a focused niche.",
+      "Long tenured player with deep single family workflow coverage.",
+      "Bulk task automation and vendor portals cover core operational needs."
+    ],
+    cons: [
+      "No meaningful product update since January 2026, and zero AI motion on the roadmap.",
+      "RealPage ownership carries the same pricing and data privacy concerns as Buildium, amplified by the rent price fixing controversy.",
+      "No agents, no AI assistant, no automation messaging anywhere on the homepage.",
+      "Positioning has stalled at \"customizable single family software\" while every other competitor pushes an AI story."
+    ],
+    opportunity: "Propertyware is the easiest displacement story in the set. The silence on AI and product investment is the signal, not the absence of one. Every Propertyware single family shop in the 300 to 1,000 door range is a live target: outbound built around the software hasn't shipped AI, ours has, plus RealPage's price fixing baggage, converts cleanly.",
+    advantages: ["active AI roadmap", "independent ownership", "modern automation", "transparent pricing", "faster product velocity"]
+  },
+  {
     id: "doorloop",
     name: "DoorLoop",
     pros: [
@@ -631,7 +649,18 @@ const competitorAnalysis = [
 
    Empty until the scheduled task starts populating it.
    ===================================================================== */
-const competitorNews = [];
+const competitorNews = [
+  {
+    competitorId: "doorloop",
+    competitor: "DoorLoop",
+    title: "DoorLoop puts \"AI-native\" on its homepage hero",
+    date: "2026-07-06",
+    source: "#growth-marketing-channel",
+    summary: "DoorLoop's homepage now reads \"the AI-native property management platform,\" backed by a new \"operational intelligence\" layer covering renewals, rent reminders, maintenance routing, AI inspections, and reporting. Also picked up the #1 spot on the 2026 Capterra FrontRunners report.",
+    url: "https://www.doorloop.com/ai-assistant",
+    tags: ["ai","positioning"]
+  }
+];
 
 /* -------- SHARED ICONS (SVG strings) -------- */
 const ICONS = {
